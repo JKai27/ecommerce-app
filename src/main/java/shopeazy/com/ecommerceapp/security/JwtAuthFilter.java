@@ -40,7 +40,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
-        String jwtToken = parseJwt(request);
+
+        // First trying to get JWT from the cookies
+        String jwtToken = JwtUtil.getTokenFromCookie(request);
+
+        // If no token found i cookie, fallback to header method
+        if (jwtToken == null) {
+            jwtToken = parseJwt(request);
+        }
+
 
         if (jwtToken == null) {
             filterChain.doFilter(request, response);
