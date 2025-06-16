@@ -1,0 +1,210 @@
+package shopeazy.com.ecommerceapp.service.serviceImplementation;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import shopeazy.com.ecommerceapp.enums.SellerStatus;
+import shopeazy.com.ecommerceapp.exceptions.ResourceNotFoundException;
+import shopeazy.com.ecommerceapp.exceptions.SellerAccountForTheCompanyNameAlreadyExistsException;
+import shopeazy.com.ecommerceapp.exceptions.SellerAlreadyExistsException;
+import shopeazy.com.ecommerceapp.mapper.SellerProfileResponseMapper;
+import shopeazy.com.ecommerceapp.model.document.Seller;
+import shopeazy.com.ecommerceapp.model.document.User;
+import shopeazy.com.ecommerceapp.model.dto.request.SellerProfileRequest;
+import shopeazy.com.ecommerceapp.model.dto.response.SellerProfileResponse;
+import shopeazy.com.ecommerceapp.repository.ProductRepository;
+import shopeazy.com.ecommerceapp.repository.SellerProfileRepository;
+import shopeazy.com.ecommerceapp.repository.UserRepository;
+import shopeazy.com.ecommerceapp.service.SellerNumberService;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class SellerProfileService implements shopeazy.com.ecommerceapp.service.contracts.SellerProfileService {
+    private final UserRepository userRepository;
+    private final SellerProfileRepository sellerProfileRepository;
+    private final SellerNumberService sellerNumberService;
+    private final ProductRepository productRepository;
+
+    /*
+        Get all sellers with their respective customer data
+     */
+    @Override
+    public List<SellerProfileResponse> getAll() {
+        List<Seller> sellers = sellerProfileRepository.findAll();
+
+        return sellers.stream()
+                .map(seller -> {
+                    User user = userRepository.findById(seller.getUserId())
+                            .orElseThrow(ResourceNotFoundException::new);
+
+                    long productCount = productRepository.countBySellerId(seller.getSellerId());
+
+                    return SellerProfileResponseMapper.toResponse(seller, user, productCount);
+                })
+                .toList();
+    }
+
+    /*
+        Get a single seller with its respective customer data
+     */
+    @Override
+    public SellerProfileResponse getById(String id) {
+        Seller seller = sellerProfileRepository.findById(id)
+                .orElseThrow(ResourceNotFoundException::new);
+
+        User user = userRepository.findById(seller.getUserId())
+                .orElseThrow(ResourceNotFoundException::new);
+
+        return SellerProfileResponseMapper.toResponse(seller, user);
+    }
+
+    /*
+        A user can apply for become a seller through this endpoint.
+     */
+
+    @Override
+    public SellerProfileResponse applyForSeller(User user, SellerProfileRequest request) {
+        checkSellerDoesNotExist(user.getEmail());
+
+        if (!isCompanyNameUnique(request.getCompanyName())) {
+            throw new SellerAccountForTheCompanyNameAlreadyExistsException(
+                    "A Seller account under the company name " + request.getCompanyName() + " already exists."
+            );
+        }
+
+        Seller seller = new Seller();
+        seller.setCompanyName(request.getCompanyName());
+        seller.setContactEmail(user.getEmail());
+        seller.setUserId(user.getId());
+        seller.setRegisteredAt(Instant.now());
+        seller.setStatus(SellerStatus.PENDING);
+        seller.setProductCount(0);
+
+        int nextSeq = sellerNumberService.getNextSequence("sellerNumber");
+        String sellerNumber = String.format("%06d", nextSeq);
+        seller.setSellerNumber(sellerNumber);
+
+        Seller savedProfile = sellerProfileRepository.save(seller);
+        return SellerProfileResponseMapper.toResponse(savedProfile, user);
+    }
+
+    private boolean isCompanyNameUnique(String companyName) {
+        List<Seller> existingSellers = sellerProfileRepository.findByCompanyName(companyName);
+        if (!existingSellers.isEmpty()) {
+            log.error("Seller account already exists for company name: {}", companyName);
+            throw new SellerAccountForTheCompanyNameAlreadyExistsException(
+                    "A Seller account under the company name " + companyName + " already exists.");
+        }
+        return true;
+    }
+
+    /*
+        Admin approves the request from the user to become a seller
+     */
+    @Override
+    public void approveSeller(String email) {
+        Seller seller = sellerProfileRepository.findByContactEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Seller not found with email: " + email));
+        seller.setStatus(SellerStatus.ACTIVE);
+        sellerProfileRepository.save(seller);
+
+        User user = userRepository.findByEmail(seller.getContactEmail())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + seller.getContactEmail()));
+        userRepository.save(user);
+    }
+
+
+    /*
+        Admin can reject the request from the user to become a seller
+     */
+
+    @Override
+    public void rejectSeller(String sellerId, String reason) {
+        Seller profile = sellerProfileRepository.findById(sellerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
+
+        profile.setStatus(SellerStatus.REJECTED);
+        // mention reason?
+        sellerProfileRepository.save(profile);
+    }
+
+    /*
+        Delete a seller by its ID
+     */
+
+    @Override
+    public void deleteSeller(String sellerId) {
+        Seller seller = sellerProfileRepository.findById(sellerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
+        sellerProfileRepository.delete(seller);
+    }
+
+    /*
+        Change seller's status from pending to
+     */
+    @Override
+    public void updateStatus(String sellerId, String status) {
+        Seller seller = sellerProfileRepository.findById(sellerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Seller not found with ID: " + sellerId));
+
+        seller.setStatus(SellerStatus.valueOf(status.toUpperCase()));
+        sellerProfileRepository.save(seller);
+    }
+
+
+    /*
+         Bulk Endpoints
+     */
+
+    @Override
+    public List<SellerProfileResponse> bulkUpdateStatus(List<String> ids, String status) {
+        SellerStatus newStatus = SellerStatus.valueOf(status.toUpperCase());
+
+        List<Seller> sellers = sellerProfileRepository.findAllById(ids);
+
+        for (Seller seller : sellers) {
+            seller.setStatus(newStatus);
+        }
+
+        sellerProfileRepository.saveAll(sellers);
+
+        List<SellerProfileResponse> responses = new ArrayList<>();
+        for (Seller seller : sellers) {
+            User customer = userRepository.findById(seller.getUserId())
+                    .orElseThrow(() -> new RuntimeException("Customer not found for seller: " + seller.getSellerId()));
+            SellerProfileResponse response = SellerProfileResponseMapper.toResponse(seller, customer);
+            responses.add(response);
+        }
+
+        return responses;
+    }
+
+    @Override
+    public void bulkDelete(List<String> ids) {
+        List<Seller> sellers = sellerProfileRepository.findAllById(ids);
+
+        if (sellers.size() != ids.size()) {
+            throw new ResourceNotFoundException("Some seller IDs were not found.");
+        }
+
+        sellerProfileRepository.deleteAll(sellers);
+    }
+
+
+    @Override
+    public void deleteAllSellers() {
+        sellerProfileRepository.deleteAll();
+        sellerNumberService.resetSequence("sellerNumber");
+    }
+
+
+    private void checkSellerDoesNotExist(String userEmail) {
+        if (sellerProfileRepository.existsByContactEmail(userEmail)) {
+            throw new SellerAlreadyExistsException("Seller already exists under this email: " + userEmail);
+        }
+    }
+}
