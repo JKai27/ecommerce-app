@@ -26,7 +26,7 @@ import java.util.Map;
 
 @Slf4j
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserController {
     /*
@@ -40,7 +40,7 @@ public class UserController {
         Get all Users with Role "USER" (no admins)
      */
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    @GetMapping("/getAll")
+    @GetMapping
     public ResponseEntity<?> getAll() {
         Map<String, Object> response = new HashMap<>();
         List<UserDTO> users = userService.getAll();
@@ -64,11 +64,11 @@ public class UserController {
     /*
         Create a User with Redis generated User-Id. While in the DB, the ID has MongoDB-ID
      */
-    @PostMapping("/create")
-    public ResponseEntity<?> createUser(@Valid @RequestBody CreateUserRequest user) throws RoleNotFoundException {
+    @PostMapping
+    public ResponseEntity<?> registerUser(@Valid @RequestBody CreateUserRequest user) throws RoleNotFoundException {
         Map<String, String> response = new HashMap<>();
         response.put("message", "User created successfully");
-        userService.create(user);
+        userService.registerUser(user);
         return ResponseEntity.ok(response);
     }
 

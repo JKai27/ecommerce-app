@@ -40,7 +40,7 @@ public class UserService implements shopeazy.com.ecommerceapp.service.contracts.
 
 
     @Override
-    public void create(CreateUserRequest createUserRequest) throws RoleNotFoundException {
+    public void registerUser(CreateUserRequest createUserRequest) throws RoleNotFoundException {
         long sequence = sequenceGenerator.generateSequence("userNumber");
         String userNumber = String.format("%06d", sequence);
         if (userRepository.existsByEmail(createUserRequest.getEmail())) {

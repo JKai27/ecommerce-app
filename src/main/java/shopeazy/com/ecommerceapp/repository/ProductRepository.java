@@ -5,4 +5,5 @@ import shopeazy.com.ecommerceapp.model.document.Product;
 
 public interface ProductRepository extends MongoRepository<Product, String> {
     long countBySellerId(String sellerId);
+
 }

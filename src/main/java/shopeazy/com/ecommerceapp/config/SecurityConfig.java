@@ -39,17 +39,18 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/users/create",
-                                "/auth/login",
-                                "/auth/logout",
-                                "/auth/refresh",
-                                "/api/seller/apply"
+                                "/api/users",
+                                "/api/auth/login",
+                                "/api/auth/logout",
+                                "/api/auth/refresh",
+                                "/api/sellers/apply",
+                                "/api/products"
                         ).permitAll()
-                        .requestMatchers(HttpMethod.GET,"/users/**", "/api/seller/getAll","/api/seller/*").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/users/**", "/api/seller/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PATCH, "/users/**", "/api/seller/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT,"/api/seller/**").hasRole("ADMIN")
-                        .requestMatchers("/auth/user/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET,"/api/users","/api/users/**", "/api/sellers", "/api/sellers/*").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/users/**", "/api/sellers/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/users/**", "/api/sellers/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/sellers/**").hasRole("ADMIN")
+                        .requestMatchers("/api/auth/user/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

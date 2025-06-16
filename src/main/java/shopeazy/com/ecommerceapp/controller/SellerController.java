@@ -22,13 +22,13 @@ import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/seller")
+@RequestMapping("/api/sellers")
 public class SellerController {
     private final SellerProfileService sellerProfileService;
     private final UserService userService;
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    @GetMapping("/getAll")
+    @GetMapping
     public ResponseEntity<?> getAll() {
         Map<String, Object> response = new HashMap<>();
         List<SellerProfileResponse> sellerProfiles = sellerProfileService.getAll();

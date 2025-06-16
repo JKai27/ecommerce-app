@@ -12,7 +12,7 @@ import java.util.List;
 
 public interface UserService {
 
-    void create(CreateUserRequest request) throws RoleNotFoundException;
+    void registerUser(CreateUserRequest request) throws RoleNotFoundException;
     List<UserDTO> getAll();
 
     User getUserByPrincipal(Principal principal);
