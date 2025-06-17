@@ -93,7 +93,7 @@ public class SellerController {
     }
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    @DeleteMapping("{sellerId}/delete")
+    @DeleteMapping("/{sellerId}/delete")
     public ResponseEntity<?> deleteSeller(@PathVariable String sellerId) {
         Map<String, Object> response = new HashMap<>();
         sellerProfileService.deleteSeller(sellerId);

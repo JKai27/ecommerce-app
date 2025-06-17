@@ -13,7 +13,7 @@ import shopeazy.com.ecommerceapp.service.serviceImplementation.AuthService;
 
 @Slf4j
 @RestController
-@RequestMapping("api/auth")
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;
