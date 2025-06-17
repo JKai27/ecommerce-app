@@ -75,8 +75,8 @@ public class SellerController {
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PatchMapping("/{id}/status")
     public ResponseEntity<?> updateStatus(@PathVariable String id, @RequestBody StatusUpdateRequest request) {
-        sellerProfileService.updateStatus(id, request.getStatus());
-        return ResponseEntity.ok().build();
+        SellerProfileResponse response = sellerProfileService.updateStatus(id, request.getStatus());
+        return ResponseEntity.ok(response);
     }
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")

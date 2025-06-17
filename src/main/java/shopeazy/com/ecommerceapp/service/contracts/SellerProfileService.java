@@ -19,7 +19,7 @@ public interface SellerProfileService {
     /*
         Change seller's status from pending to
      */
-    void updateStatus(String sellerId, String status);
+    SellerProfileResponse updateStatus(String sellerId, String status);
 
     List<SellerProfileResponse> bulkUpdateStatus(List<String> ids, String status);
 

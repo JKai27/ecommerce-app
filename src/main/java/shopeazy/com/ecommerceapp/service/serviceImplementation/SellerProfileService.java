@@ -153,12 +153,15 @@ public class SellerProfileService implements shopeazy.com.ecommerceapp.service.c
         Change seller's status from pending to
      */
     @Override
-    public void updateStatus(String sellerId, String status) {
+    public SellerProfileResponse updateStatus(String sellerId, String status) {
         Seller seller = sellerProfileRepository.findById(sellerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Seller not found with ID: " + sellerId));
+        User customer = userRepository.findById(seller.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found with ID: " + seller.getUserId()));
 
         seller.setStatus(SellerStatus.valueOf(status.toUpperCase()));
         sellerProfileRepository.save(seller);
+        return SellerProfileResponseMapper.toResponse(seller,customer);
     }
 
 
