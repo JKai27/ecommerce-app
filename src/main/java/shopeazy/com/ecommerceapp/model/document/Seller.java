@@ -24,7 +24,6 @@ public class Seller {
     private String companyName;
 
     @Indexed(unique = true)
-   @Field("email")
     private String contactEmail;
 
     private int productCount;

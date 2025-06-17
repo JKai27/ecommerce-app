@@ -43,6 +43,7 @@ public class SellerProfileResponseMapper {
         response.setCustomer(customer);
         return response;
     }
+
     public static SellerProfileResponse toResponse(Seller profile, User user) {
         return toResponse(profile, user, 0); // fallback count
     }

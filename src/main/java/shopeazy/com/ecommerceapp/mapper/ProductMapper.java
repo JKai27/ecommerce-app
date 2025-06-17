@@ -1,15 +1,18 @@
 package shopeazy.com.ecommerceapp.mapper;
 
 import org.springframework.stereotype.Component;
-import shopeazy.com.ecommerceapp.model.dto.request.ProductDto;
+import shopeazy.com.ecommerceapp.enums.ProductStatus;
+import shopeazy.com.ecommerceapp.model.dto.request.CreateProductRequest;
 import shopeazy.com.ecommerceapp.model.dto.response.ProductResponseDto;
 import shopeazy.com.ecommerceapp.model.document.Product;
+
+import java.time.Instant;
 
 
 @Component
 public class ProductMapper {
 
-    public static ProductResponseDto toDto(Product product) {
+    public static ProductResponseDto mapToDto(Product product) {
         if (product == null) return null;
 
         ProductResponseDto dto = new ProductResponseDto();
@@ -28,7 +31,21 @@ public class ProductMapper {
         return dto;
     }
 
-    public static Product toEntity(ProductDto dto) {
-        return null;
+    public Product toEntity(CreateProductRequest dto) {
+        if (dto == null) return null;
+
+        Product product = new Product();
+        product.setName(dto.getName());
+        product.setDescription(dto.getDescription());
+        product.setPrice(dto.getPrice());
+        product.setDiscount(dto.getDiscount());
+        product.setStockCount(dto.getStockCount());
+        product.setCategory(dto.getCategory());
+        product.setImages(dto.getImages());
+        product.setSellerId(dto.getSellerId());
+        product.setStatus(ProductStatus.valueOf(dto.getStatus()));
+        product.setCreatedAt(Instant.now());
+        product.setUpdatedAt(Instant.now());
+        return product;
     }
 }

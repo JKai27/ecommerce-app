@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service;
 import shopeazy.com.ecommerceapp.exceptions.ResourceNotFoundException;
 import shopeazy.com.ecommerceapp.mapper.ProductMapper;
 import shopeazy.com.ecommerceapp.model.document.Product;
-import shopeazy.com.ecommerceapp.model.dto.request.ProductDto;
 import shopeazy.com.ecommerceapp.model.dto.response.ProductResponseDto;
 import shopeazy.com.ecommerceapp.repository.ProductRepository;
 
@@ -23,11 +22,7 @@ public class ProductService {
     public ProductResponseDto getProductById(String id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product by product Id " + id + " doesn't exist"));
-        return ProductMapper.toDto(product);
-    }
-    public List<ProductDto> registerProduct(ProductDto productDto) {
-
-        return null;
+        return ProductMapper.mapToDto(product);
     }
 
 }

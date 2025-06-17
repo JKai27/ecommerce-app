@@ -2,10 +2,12 @@ package shopeazy.com.ecommerceapp.model.dto.request;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;
+import shopeazy.com.ecommerceapp.model.document.Product;
+
 import java.util.List;
 
 @Data
-public class ProductDto {
+public class CreateProductRequest {
 
     @NotBlank(message = "Product name is required")
     private String name;

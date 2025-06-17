@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import shopeazy.com.ecommerceapp.enums.SellerStatus;
+import shopeazy.com.ecommerceapp.exceptions.InvalidEmailException;
 import shopeazy.com.ecommerceapp.exceptions.ResourceNotFoundException;
 import shopeazy.com.ecommerceapp.exceptions.SellerAccountForTheCompanyNameAlreadyExistsException;
 import shopeazy.com.ecommerceapp.exceptions.SellerAlreadyExistsException;
@@ -75,10 +76,13 @@ public class SellerProfileService implements shopeazy.com.ecommerceapp.service.c
                     "A Seller account under the company name " + request.getCompanyName() + " already exists."
             );
         }
+        if (request.getContactEmail() != null && sellerProfileRepository.existsByContactEmail(request.getContactEmail())) {
+            throw new InvalidEmailException("Contact email address already in use. Please choose another one.");
+        }
 
         Seller seller = new Seller();
         seller.setCompanyName(request.getCompanyName());
-        seller.setContactEmail(user.getEmail());
+        seller.setContactEmail(request.getContactEmail());
         seller.setUserId(user.getId());
         seller.setRegisteredAt(Instant.now());
         seller.setStatus(SellerStatus.PENDING);
@@ -88,7 +92,9 @@ public class SellerProfileService implements shopeazy.com.ecommerceapp.service.c
         String sellerNumber = String.format("%06d", nextSeq);
         seller.setSellerNumber(sellerNumber);
 
+        System.out.println("Saving seller with contactEmail: " + seller.getContactEmail());
         Seller savedProfile = sellerProfileRepository.save(seller);
+        System.out.println("Saved seller = " + savedProfile);
         return SellerProfileResponseMapper.toResponse(savedProfile, user);
     }
 

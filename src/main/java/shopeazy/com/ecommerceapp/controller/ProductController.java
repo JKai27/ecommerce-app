@@ -23,7 +23,7 @@ public class ProductController {
     public ResponseEntity<List<ProductResponseDto>> getAllProducts() {
         List<Product> products = productService.findAll();
         List<ProductResponseDto> responseDtoList = products.stream()
-                .map(ProductMapper::toDto)
+                .map(ProductMapper::mapToDto)
                 .toList();
         return ResponseEntity.ok(responseDtoList);
     }
