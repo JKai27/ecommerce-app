@@ -27,10 +27,8 @@ public class SellerController {
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @GetMapping
     public ResponseEntity<?> getAll() {
-        Map<String, Object> response = new HashMap<>();
         List<SellerProfileResponse> sellerProfiles = sellerProfileService.getAll();
-        response.put("sellerProfiles", sellerProfiles);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(sellerProfiles);
     }
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")

@@ -4,8 +4,11 @@ import shopeazy.com.ecommerceapp.model.document.Seller;
 import shopeazy.com.ecommerceapp.model.document.User;
 import shopeazy.com.ecommerceapp.model.dto.response.SellerProfileResponse;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class SellerProfileResponseMapper {
-    public static SellerProfileResponse toResponse(Seller profile, User user, long productCount) {
+    public static SellerProfileResponse toResponse(Seller profile, User user, long productCount, List<String> permissions) {
         SellerProfileResponse response = new SellerProfileResponse();
 
         response.setId(profile.getSellerId());
@@ -25,7 +28,9 @@ public class SellerProfileResponseMapper {
         customer.setLastName(user.getLastName());
         customer.setGender(user.getGender().name());
         customer.setImageUrl(user.getImageUrl());
-        customer.setRoles(user.getRoles());
+        List<String> roles = user.getRoles();
+        customer.setRoles(roles);
+        customer.setPermissions(new ArrayList<>(permissions));
         customer.setStatus(user.getStatus().name());
         customer.setCreatedAt(user.getCreatedAt());
         customer.setUpdatedAt(user.getUpdatedAt());
@@ -45,7 +50,7 @@ public class SellerProfileResponseMapper {
     }
 
     public static SellerProfileResponse toResponse(Seller profile, User user) {
-        return toResponse(profile, user, 0); // fallback count
+        return toResponse(profile, user, 0,null); // fallback count
     }
 
 }

@@ -28,6 +28,7 @@ import shopeazy.com.ecommerceapp.service.contracts.SellerProfileService;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -38,6 +39,8 @@ public class SellerProfileServiceImpl implements SellerProfileService {
     private final SellerNumberService sellerNumberService;
     private final ProductRepository productRepository;
     private final RoleAssignmentService roleAssignmentService;
+    private final PermissionResolverService permissionResolverService;
+
     /*
         Get all sellers with their respective customer data
      */
@@ -51,10 +54,16 @@ public class SellerProfileServiceImpl implements SellerProfileService {
                             .orElseThrow(ResourceNotFoundException::new);
 
                     long productCount = productRepository.countBySellerId(seller.getSellerId());
+                    Set<String> resolvePermissions = permissionResolverService.resolvePermissions(user);
 
-                    return SellerProfileResponseMapper.toResponse(seller, user, productCount);
+                    return SellerProfileResponseMapper.toResponse(
+                            seller,
+                            user,
+                            productCount,
+                            new ArrayList<>(resolvePermissions)
+                    );
                 })
-                .toList();
+                .toList(); // or .collect(Collectors.toList()) if using Java < 16
     }
 
     /*

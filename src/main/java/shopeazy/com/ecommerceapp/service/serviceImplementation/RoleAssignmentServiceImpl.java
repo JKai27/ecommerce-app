@@ -44,8 +44,6 @@ public class RoleAssignmentServiceImpl implements RoleAssignmentService {
     }
 
 
-
-
     @Override
     public Role createRoleWithPermissions(String roleName, List<Permission> permissionSet) {
         List<Permission> permissions = permissionSet.stream()
@@ -54,7 +52,12 @@ public class RoleAssignmentServiceImpl implements RoleAssignmentService {
                 .toList();
 
         return roleRepository.findByName(roleName)
+                .map(existinRole -> {
+                    existinRole.setPermissions(permissions);
+                    return roleRepository.save(existinRole);
+                })
                 .orElseGet(() -> roleRepository.save(new Role(roleName, permissions)));
+
     }
 
     @Override
