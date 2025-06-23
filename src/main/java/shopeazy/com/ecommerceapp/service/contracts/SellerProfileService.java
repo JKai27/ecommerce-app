@@ -1,6 +1,7 @@
 package shopeazy.com.ecommerceapp.service.contracts;
 
 import shopeazy.com.ecommerceapp.model.document.User;
+import shopeazy.com.ecommerceapp.model.dto.request.SellerApprovalRequest;
 import shopeazy.com.ecommerceapp.model.dto.request.SellerProfileRequest;
 import shopeazy.com.ecommerceapp.model.dto.response.SellerProfileResponse;
 
@@ -12,7 +13,7 @@ public interface SellerProfileService {
 
     SellerProfileResponse applyForSeller(User user, SellerProfileRequest request);
 
-    void approveSeller(String sellerId);
+    void approveSeller(SellerApprovalRequest request);
 
     void rejectSeller(String sellerId, String reason);
 

@@ -3,33 +3,41 @@ package shopeazy.com.ecommerceapp.service.serviceImplementation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import shopeazy.com.ecommerceapp.enums.RoleType;
 import shopeazy.com.ecommerceapp.enums.SellerStatus;
 import shopeazy.com.ecommerceapp.exceptions.InvalidEmailException;
 import shopeazy.com.ecommerceapp.exceptions.ResourceNotFoundException;
 import shopeazy.com.ecommerceapp.exceptions.SellerAccountForTheCompanyNameAlreadyExistsException;
 import shopeazy.com.ecommerceapp.exceptions.SellerAlreadyExistsException;
 import shopeazy.com.ecommerceapp.mapper.SellerProfileResponseMapper;
+import shopeazy.com.ecommerceapp.model.document.Permission;
+import shopeazy.com.ecommerceapp.model.document.Role;
 import shopeazy.com.ecommerceapp.model.document.Seller;
 import shopeazy.com.ecommerceapp.model.document.User;
+import shopeazy.com.ecommerceapp.model.dto.request.SellerApprovalRequest;
 import shopeazy.com.ecommerceapp.model.dto.request.SellerProfileRequest;
 import shopeazy.com.ecommerceapp.model.dto.response.SellerProfileResponse;
 import shopeazy.com.ecommerceapp.repository.ProductRepository;
+import shopeazy.com.ecommerceapp.repository.RoleRepository;
 import shopeazy.com.ecommerceapp.repository.SellerProfileRepository;
 import shopeazy.com.ecommerceapp.repository.UserRepository;
 import shopeazy.com.ecommerceapp.service.SellerNumberService;
+import shopeazy.com.ecommerceapp.service.contracts.RoleAssignmentService;
+import shopeazy.com.ecommerceapp.service.contracts.SellerProfileService;
 
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class SellerProfileService implements shopeazy.com.ecommerceapp.service.contracts.SellerProfileService {
+public class SellerProfileServiceImpl implements SellerProfileService {
     private final UserRepository userRepository;
     private final SellerProfileRepository sellerProfileRepository;
     private final SellerNumberService sellerNumberService;
     private final ProductRepository productRepository;
-
+    private final RoleAssignmentService roleAssignmentService;
     /*
         Get all sellers with their respective customer data
      */
@@ -112,15 +120,30 @@ public class SellerProfileService implements shopeazy.com.ecommerceapp.service.c
         Admin approves the request from the user to become a seller
      */
     @Override
-    public void approveSeller(String email) {
-        Seller seller = sellerProfileRepository.findByContactEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Seller not found with email: " + email));
+    public void approveSeller(SellerApprovalRequest request) {
+        Seller seller = sellerProfileRepository.findByContactEmail(request.getContactEmail())
+                .orElseThrow(() -> new ResourceNotFoundException("Seller not found with email: " + request.getContactEmail()));
         seller.setStatus(SellerStatus.ACTIVE);
         sellerProfileRepository.save(seller);
-
-        User user = userRepository.findByEmail(seller.getContactEmail())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + seller.getContactEmail()));
+        User user = addSellerRoleAndPermissionsToTheApprovedUserForTheSellerProfile(request);
         userRepository.save(user);
+    }
+
+    private User addSellerRoleAndPermissionsToTheApprovedUserForTheSellerProfile(SellerApprovalRequest request) {
+        User user = userRepository.findByEmail(request.getUserEmail())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + request.getUserEmail()));
+
+        List<Permission> sellerPermissions = List.of(
+                new Permission("READ"),
+                new Permission("WRITE"),
+                new Permission("CREATE")
+        );
+        roleAssignmentService.createRoleWithPermissions(RoleType.ROLE_SELLER.name(), sellerPermissions);
+
+        // Assigning Seller-Role to the requested user.
+        roleAssignmentService.assignRoleToUser(user, RoleType.ROLE_SELLER.name());
+        log.info("Assigned ROLE_SELLER to user {} ", user.getEmail());
+        return user;
     }
 
 
@@ -161,7 +184,7 @@ public class SellerProfileService implements shopeazy.com.ecommerceapp.service.c
 
         seller.setStatus(SellerStatus.valueOf(status.toUpperCase()));
         sellerProfileRepository.save(seller);
-        return SellerProfileResponseMapper.toResponse(seller,customer);
+        return SellerProfileResponseMapper.toResponse(seller, customer);
     }
 
 

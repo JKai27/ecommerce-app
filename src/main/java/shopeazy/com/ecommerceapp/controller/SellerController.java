@@ -7,10 +7,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import shopeazy.com.ecommerceapp.exceptions.SellerAlreadyExistsException;
 import shopeazy.com.ecommerceapp.model.document.User;
-import shopeazy.com.ecommerceapp.model.dto.request.BulkStatusRequest;
-import shopeazy.com.ecommerceapp.model.dto.request.IdListRequest;
-import shopeazy.com.ecommerceapp.model.dto.request.SellerProfileRequest;
-import shopeazy.com.ecommerceapp.model.dto.request.StatusUpdateRequest;
+import shopeazy.com.ecommerceapp.model.dto.request.*;
 import shopeazy.com.ecommerceapp.model.dto.response.SellerProfileResponse;
 import shopeazy.com.ecommerceapp.service.contracts.SellerProfileService;
 import shopeazy.com.ecommerceapp.service.contracts.UserService;
@@ -59,9 +56,9 @@ public class SellerController {
     }
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    @PutMapping("/approve/{id}")
-    public ResponseEntity<?> approveSeller(@PathVariable String id) {
-        sellerProfileService.approveSeller(id);
+    @PutMapping("/approve")
+    public ResponseEntity<?> approveSeller(@RequestBody SellerApprovalRequest request) {
+        sellerProfileService.approveSeller(request);
         return ResponseEntity.ok().build();
     }
 

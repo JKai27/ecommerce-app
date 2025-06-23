@@ -11,6 +11,7 @@ import shopeazy.com.ecommerceapp.model.document.User;
 import shopeazy.com.ecommerceapp.repository.PermissionRepository;
 import shopeazy.com.ecommerceapp.repository.RoleRepository;
 import shopeazy.com.ecommerceapp.repository.UserRepository;
+import shopeazy.com.ecommerceapp.service.contracts.RoleAssignmentService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +19,7 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class RoleAssignmentService implements shopeazy.com.ecommerceapp.service.contracts.RoleAssignmentService {
+public class RoleAssignmentServiceImpl implements RoleAssignmentService {
     private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;
     private final UserRepository userRepository;

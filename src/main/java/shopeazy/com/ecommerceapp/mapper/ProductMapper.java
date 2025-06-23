@@ -31,7 +31,7 @@ public class ProductMapper {
         return dto;
     }
 
-    public Product toEntity(CreateProductRequest dto) {
+    public static Product toEntity(CreateProductRequest dto) {
         if (dto == null) return null;
 
         Product product = new Product();
@@ -43,7 +43,7 @@ public class ProductMapper {
         product.setCategory(dto.getCategory());
         product.setImages(dto.getImages());
         product.setSellerId(dto.getSellerId());
-        product.setStatus(ProductStatus.valueOf(dto.getStatus()));
+        product.setStatus(dto.getStatus());
         product.setCreatedAt(Instant.now());
         product.setUpdatedAt(Instant.now());
         return product;

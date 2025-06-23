@@ -2,6 +2,7 @@ package shopeazy.com.ecommerceapp.model.dto.request;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;
+import shopeazy.com.ecommerceapp.enums.ProductStatus;
 import shopeazy.com.ecommerceapp.model.document.Product;
 
 import java.util.List;
@@ -34,7 +35,7 @@ public class CreateProductRequest {
     private List<@NotBlank String> images;
 
     @NotNull(message = "Status is required")
-    private String status; // Or ProductStatus if you're validating enums on input
+    private ProductStatus status; // Or ProductStatus if you're validating enums on input
 
     @NotBlank(message = "Seller ID is required")
     private String sellerId;
