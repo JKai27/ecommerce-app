@@ -20,7 +20,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import shopeazy.com.ecommerceapp.exceptions.CustomAccessDeniedHandler;
 import shopeazy.com.ecommerceapp.jwt.JwtAuthFilter;
+import shopeazy.com.ecommerceapp.userDetails.CustomUserDetailsService;
 
 import java.util.List;
 
@@ -30,7 +32,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final JwtAuthFilter jwtAuthFilter;
-
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -46,9 +48,9 @@ public class SecurityConfig {
                                 "/api/sellers/apply",
                                 "/api/products"
                         ).permitAll()
-                        .requestMatchers(HttpMethod.GET,"/api/users","/api/users/**", "/api/sellers", "/api/sellers/*").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST,"/api/products").hasRole("SELLER")
-                        .requestMatchers(HttpMethod.DELETE, "/api/users/**", "/api/sellers/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/users", "/api/users/**", "/api/sellers", "/api/sellers/*").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/products").hasRole("SELLER")
+                        .requestMatchers(HttpMethod.DELETE, "/api/users/**", "/api/sellers/** ","/api/products").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/users/**", "/api/sellers/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/sellers/**").hasRole("ADMIN")
                         .requestMatchers("/api/auth/user/**").hasRole("ADMIN")
@@ -56,10 +58,7 @@ public class SecurityConfig {
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exception -> exception
-                        .accessDeniedHandler((request, response, accessDeniedException) -> {
-                            System.out.println("ACCESS DENIED — SECURITY CONTEXT: " + SecurityContextHolder.getContext().getAuthentication());
-                            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied");
-                        })
+                        .accessDeniedHandler(customAccessDeniedHandler)
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
