@@ -104,37 +104,78 @@ public class SellerController {
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PutMapping("/bulk-status")
-    public ResponseEntity<?> updateSellerStatusesInBulk(@RequestBody BulkStatusRequest request) {
+    public ResponseEntity<ApiResponse<List<SellerProfileResponse>>> updateSellerStatusesInBulk(
+            @RequestBody BulkStatusRequest request) {
         try {
-            List<SellerProfileResponse> updatedSellers = sellerProfileService.bulkUpdateStatus(request.getIds(), request.getStatus());
-            return ResponseEntity.ok(updatedSellers);
+            List<SellerProfileResponse> updatedSellers =
+                    sellerProfileService.bulkUpdateStatus(request.getIds(), request.getStatus());
+
+            ApiResponse<List<SellerProfileResponse>> response = new ApiResponse<>(
+                    true,
+                    "Successfully updated statuses for " + updatedSellers.size() + " sellers.",
+                    updatedSellers,
+                    Instant.now()
+            );
+
+            return ResponseEntity.ok(response);
+
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("Invalid status value: " + request.getStatus());
+            ApiResponse<List<SellerProfileResponse>> errorResponse = new ApiResponse<>(
+                    false,
+                    "Invalid status value: " + request.getStatus(),
+                    null,
+                    Instant.now()
+            );
+            return ResponseEntity.badRequest().body(errorResponse);
+
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Failed to update sellers in bulk.");
+            ApiResponse<List<SellerProfileResponse>> errorResponse = new ApiResponse<>(
+                    false,
+                    "Failed to update sellers in bulk.",
+                    null,
+                    Instant.now()
+            );
+            return ResponseEntity.internalServerError().body(errorResponse);
         }
     }
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    @DeleteMapping("/{sellerId}/delete")
-    public ResponseEntity<?> deleteSeller(@PathVariable String sellerId) {
-        Map<String, Object> response = new HashMap<>();
+    @DeleteMapping("/{sellerId}")
+    public ResponseEntity<ApiResponse<String>> deleteSeller(@PathVariable String sellerId) {
         sellerProfileService.deleteSeller(sellerId);
-        response.put("Deleted Seller", sellerId);
+        ApiResponse<String> response = new ApiResponse<>(
+                true,
+                "Seller deleted successfully.",
+                sellerId,
+                Instant.now()
+        );
         return ResponseEntity.ok(response);
     }
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    @DeleteMapping("/bulk-delete")
-    public ResponseEntity<?> bulkDelete(@RequestBody IdListRequest request) {
+    @DeleteMapping("/bulk")
+    public ResponseEntity<ApiResponse<List<String>>> bulkDelete(@RequestBody IdListRequest request) {
         sellerProfileService.bulkDelete(request.getIds());
-        return ResponseEntity.noContent().build();
+
+        ApiResponse<List<String>> response = new ApiResponse<>(
+                true,
+                "Successfully deleted " + request.getIds().size() + " sellers.",
+                request.getIds(),
+                Instant.now()
+        );
+        return ResponseEntity.ok(response);
     }
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    @DeleteMapping("/deleteAll")
-    public ResponseEntity<?> deleteAllSellers() {
+    @DeleteMapping
+    public ResponseEntity<ApiResponse<String>> deleteAllSellers() {
         sellerProfileService.deleteAllSellers();
-        return ResponseEntity.noContent().build();
+        ApiResponse<String> response = new ApiResponse<>(
+                true,
+                "All sellers deleted successfully.",
+                null,
+                Instant.now()
+        );
+        return ResponseEntity.ok(response);
     }
 }
