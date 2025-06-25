@@ -1,10 +1,10 @@
 package shopeazy.com.ecommerceapp.model.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
 public class StatusUpdateRequest {
-    @NotBlank
+    @NotNull(message = "Status must not be null")
     private String status;
 }

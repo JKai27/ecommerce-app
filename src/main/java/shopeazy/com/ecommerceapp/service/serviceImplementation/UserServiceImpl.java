@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class UserService implements shopeazy.com.ecommerceapp.service.contracts.UserService {
+public class UserServiceImpl implements shopeazy.com.ecommerceapp.service.contracts.UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final BCryptPasswordEncoder passwordEncoder;
@@ -40,7 +40,7 @@ public class UserService implements shopeazy.com.ecommerceapp.service.contracts.
 
 
     @Override
-    public void registerUser(CreateUserRequest createUserRequest) throws RoleNotFoundException {
+    public UserDTO registerUser(CreateUserRequest createUserRequest) throws RoleNotFoundException {
         long sequence = sequenceGenerator.generateSequence("userNumber");
         String userNumber = String.format("%06d", sequence);
         if (userRepository.existsByEmail(createUserRequest.getEmail())) {
@@ -64,7 +64,7 @@ public class UserService implements shopeazy.com.ecommerceapp.service.contracts.
         user.setOrdersCount(0);
         user.setAddress(null);
         userRepository.save(user);
-
+        return UserMapper.mapToDTO(user, roleRepository);
     }
 
     private Role getRoleByName() throws RoleNotFoundException {

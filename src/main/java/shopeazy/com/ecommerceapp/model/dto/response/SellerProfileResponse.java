@@ -12,7 +12,7 @@ public class SellerProfileResponse {
     private String companyName;
     private String sellerNumber;
     private String contactEmail;
-    private String status;
+    private String sellerStatus;
     private int productCount;
     private Instant registeredAt;
 

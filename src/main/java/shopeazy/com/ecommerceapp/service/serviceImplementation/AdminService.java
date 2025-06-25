@@ -12,7 +12,7 @@ import shopeazy.com.ecommerceapp.jwt.JwtService;
 public class AdminService {
     private final UserRepository userRepository;
     private final JwtService jwtService;
-    private final UserService userService;
+    private final UserServiceImpl userServiceImpl;
 
 
 

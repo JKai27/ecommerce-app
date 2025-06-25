@@ -11,14 +11,12 @@ import shopeazy.com.ecommerceapp.exceptions.SellerAccountForTheCompanyNameAlread
 import shopeazy.com.ecommerceapp.exceptions.SellerAlreadyExistsException;
 import shopeazy.com.ecommerceapp.mapper.SellerProfileResponseMapper;
 import shopeazy.com.ecommerceapp.model.document.Permission;
-import shopeazy.com.ecommerceapp.model.document.Role;
 import shopeazy.com.ecommerceapp.model.document.Seller;
 import shopeazy.com.ecommerceapp.model.document.User;
 import shopeazy.com.ecommerceapp.model.dto.request.SellerApprovalRequest;
 import shopeazy.com.ecommerceapp.model.dto.request.SellerProfileRequest;
 import shopeazy.com.ecommerceapp.model.dto.response.SellerProfileResponse;
 import shopeazy.com.ecommerceapp.repository.ProductRepository;
-import shopeazy.com.ecommerceapp.repository.RoleRepository;
 import shopeazy.com.ecommerceapp.repository.SellerProfileRepository;
 import shopeazy.com.ecommerceapp.repository.UserRepository;
 import shopeazy.com.ecommerceapp.service.SellerNumberService;
@@ -102,16 +100,16 @@ public class SellerProfileServiceImpl implements SellerProfileService {
         seller.setContactEmail(request.getContactEmail());
         seller.setUserId(user.getId());
         seller.setRegisteredAt(Instant.now());
-        seller.setStatus(SellerStatus.PENDING);
+        seller.setSellerStatus(SellerStatus.PENDING);
         seller.setProductCount(0);
 
         int nextSeq = sellerNumberService.getNextSequence("sellerNumber");
         String sellerNumber = String.format("%06d", nextSeq);
         seller.setSellerNumber(sellerNumber);
 
-        System.out.println("Saving seller with contactEmail: " + seller.getContactEmail());
+        log.info("Saving seller with contactEmail: {}", seller.getContactEmail());
         Seller savedProfile = sellerProfileRepository.save(seller);
-        System.out.println("Saved seller = " + savedProfile);
+        log.info("Saved seller: {}", savedProfile);
         return SellerProfileResponseMapper.toResponse(savedProfile, user);
     }
 
@@ -132,7 +130,7 @@ public class SellerProfileServiceImpl implements SellerProfileService {
     public void approveSeller(SellerApprovalRequest request) {
         Seller seller = sellerProfileRepository.findByContactEmail(request.getContactEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("Seller not found with email: " + request.getContactEmail()));
-        seller.setStatus(SellerStatus.ACTIVE);
+        seller.setSellerStatus(SellerStatus.ACTIVE);
         sellerProfileRepository.save(seller);
         User user = addSellerRoleAndPermissionsToTheApprovedUserForTheSellerProfile(request);
         userRepository.save(user);
@@ -165,7 +163,7 @@ public class SellerProfileServiceImpl implements SellerProfileService {
         Seller profile = sellerProfileRepository.findById(sellerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
 
-        profile.setStatus(SellerStatus.REJECTED);
+        profile.setSellerStatus(SellerStatus.REJECTED);
         // mention reason?
         sellerProfileRepository.save(profile);
     }
@@ -191,7 +189,7 @@ public class SellerProfileServiceImpl implements SellerProfileService {
         User customer = userRepository.findById(seller.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found with ID: " + seller.getUserId()));
 
-        seller.setStatus(SellerStatus.valueOf(status.toUpperCase()));
+        seller.setSellerStatus(SellerStatus.valueOf(status.toUpperCase()));
         sellerProfileRepository.save(seller);
         return SellerProfileResponseMapper.toResponse(seller, customer);
     }
@@ -208,7 +206,7 @@ public class SellerProfileServiceImpl implements SellerProfileService {
         List<Seller> sellers = sellerProfileRepository.findAllById(ids);
 
         for (Seller seller : sellers) {
-            seller.setStatus(newStatus);
+            seller.setSellerStatus(newStatus);
         }
 
         sellerProfileRepository.saveAll(sellers);

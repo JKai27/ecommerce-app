@@ -5,6 +5,7 @@ import shopeazy.com.ecommerceapp.model.document.User;
 import shopeazy.com.ecommerceapp.model.dto.response.SellerProfileResponse;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class SellerProfileResponseMapper {
@@ -15,7 +16,7 @@ public class SellerProfileResponseMapper {
         response.setCompanyName(profile.getCompanyName());
         response.setSellerNumber(profile.getSellerNumber());
         response.setContactEmail(profile.getContactEmail());
-        response.setStatus(profile.getStatus().name());
+        response.setSellerStatus(profile.getSellerStatus().name());
         response.setProductCount((int) productCount);
         response.setRegisteredAt(profile.getRegisteredAt());
 
@@ -30,7 +31,8 @@ public class SellerProfileResponseMapper {
         customer.setImageUrl(user.getImageUrl());
         List<String> roles = user.getRoles();
         customer.setRoles(roles);
-        customer.setPermissions(new ArrayList<>(permissions));
+        List<String> safePermissions = permissions != null ? permissions : new ArrayList<>();
+        customer.setPermissions(new ArrayList<>(safePermissions));
         customer.setStatus(user.getStatus().name());
         customer.setCreatedAt(user.getCreatedAt());
         customer.setUpdatedAt(user.getUpdatedAt());
@@ -50,7 +52,7 @@ public class SellerProfileResponseMapper {
     }
 
     public static SellerProfileResponse toResponse(Seller profile, User user) {
-        return toResponse(profile, user, 0,null); // fallback count
+        return toResponse(profile, user, 0, Collections.emptyList());
     }
 
 }

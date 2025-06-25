@@ -16,10 +16,12 @@ import shopeazy.com.ecommerceapp.model.dto.request.CreateUserRequest;
 import shopeazy.com.ecommerceapp.model.dto.request.UserUpdateInBulkRequest;
 import shopeazy.com.ecommerceapp.model.dto.request.StatusUpdateRequest;
 import shopeazy.com.ecommerceapp.model.dto.request.UserDTO;
+import shopeazy.com.ecommerceapp.model.dto.response.ApiResponse;
 import shopeazy.com.ecommerceapp.repository.RoleRepository;
 import shopeazy.com.ecommerceapp.service.contracts.UserService;
 
 import javax.management.relation.RoleNotFoundException;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,9 +31,7 @@ import java.util.Map;
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserController {
-    /*
-        ToDO: Call Service Methods through UserService contract.
-     */
+
     private final UserService userService;
     private final RoleRepository roleRepository;
     private final RedisTemplate<String, String> redisTemplate;
@@ -65,11 +65,11 @@ public class UserController {
         Create a User with Redis generated User-Id. While in the DB, the ID has MongoDB-ID
      */
     @PostMapping
-    public ResponseEntity<?> registerUser(@Valid @RequestBody CreateUserRequest user) throws RoleNotFoundException {
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "User created successfully");
-        userService.registerUser(user);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<ApiResponse<UserDTO>> registerUser(@Valid @RequestBody CreateUserRequest user) throws RoleNotFoundException {
+        UserDTO registeredUser = userService.registerUser(user);
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, "User created successfully", registeredUser, Instant.now())
+        );
     }
 
     /*

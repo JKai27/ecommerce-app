@@ -13,7 +13,6 @@ import shopeazy.com.ecommerceapp.repository.ProductRepository;
 import shopeazy.com.ecommerceapp.service.contracts.ProductService;
 import shopeazy.com.ecommerceapp.service.contracts.UpdateProductRequestDto;
 
-import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 @Service
