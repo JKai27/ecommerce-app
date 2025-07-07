@@ -6,6 +6,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,12 +19,26 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-@Component
+/*
+
+GOOD TO KNOW
+In Spring Boot filters
+registered as @Component or via FilterRegistrationBean are part of the Servlet container’s filter chain
+and execute before Spring Security.
+These filters are not aware of Spring Security’s SecurityContext,
+unless you manually add them to the Spring Security filter chain using HttpSecurity.addFilterBefore(...).
+For anything involving authentication or authorization,
+it’s essential to register filters explicitly in the security filter chain to ensure correct behavior and ordering.
+
+*/
+
 @Slf4j
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
+
+
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,

@@ -12,6 +12,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -20,6 +21,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import shopeazy.com.ecommerceapp.exceptions.CustomAccessDeniedHandler;
 import shopeazy.com.ecommerceapp.jwt.JwtAuthFilter;
+import shopeazy.com.ecommerceapp.jwt.JwtService;
 
 import java.util.List;
 
@@ -28,8 +30,9 @@ import java.util.List;
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-    private final JwtAuthFilter jwtAuthFilter;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
+    private final JwtService jwtService;
+    private final UserDetailsService userDetailsService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -57,7 +60,7 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception
                         .accessDeniedHandler(customAccessDeniedHandler)
                 )
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JwtAuthFilter(jwtService,userDetailsService), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -84,5 +87,4 @@ public class SecurityConfig {
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
 }
