@@ -45,7 +45,6 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
-                        .requestMatchers("/api/products/**","/api/products/**").permitAll()
                         .requestMatchers(HttpMethod.GET, ADMIN_GET_ENDPOINTS).hasRole(ROLE_ADMIN)
                         .requestMatchers(HttpMethod.POST, SELLER_ENDPOINTS).hasRole(ROLE_SELLER)
                         .requestMatchers(HttpMethod.DELETE,ADMIN_DELETE_ENDPOINTS ).hasRole(ROLE_ADMIN)

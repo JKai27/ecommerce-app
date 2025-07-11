@@ -1,10 +1,10 @@
 package shopeazy.com.ecommerce_app.util;
 
 
-
 @SuppressWarnings("squid:S2386") // Public static mutable fields
 public final class EndpointPaths {
-    private EndpointPaths() {}
+    private EndpointPaths() {
+    }
 
     // Reusable endpoint literals
     public static final String USERS_WILDCARD = "/api/users/**";
@@ -26,7 +26,7 @@ public final class EndpointPaths {
     };
 
     public static final String[] SELLER_ENDPOINTS = {
-            PRODUCTS, SELLERS_WILDCARD
+            PRODUCTS, SELLERS_WILDCARD, "/api/products/{productId}/images"
     };
 
     // Admin-only DELETE

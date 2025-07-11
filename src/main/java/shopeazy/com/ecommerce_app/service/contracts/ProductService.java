@@ -1,7 +1,5 @@
 package shopeazy.com.ecommerce_app.service.contracts;
 
-import org.apache.coyote.BadRequestException;
-import org.springframework.web.multipart.MultipartFile;
 import shopeazy.com.ecommerce_app.model.document.Product;
 import shopeazy.com.ecommerce_app.model.dto.request.CreateProductRequest;
 import shopeazy.com.ecommerce_app.model.dto.response.ProductResponseDto;
@@ -23,5 +21,4 @@ public interface ProductService {
 
     void deleteAllProductsBySellerId(String sellerId);
 
-    List<String> uploadImages(List<MultipartFile> files, String productId) throws BadRequestException;
 }
