@@ -5,6 +5,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-public interface ProductImageUploadService {
-    List<String> uploadImages(List<MultipartFile> files, String productId) throws BadRequestException;
+public interface ProductImagesManagementService {
+    List<String> uploadImages(List<MultipartFile> files, String productId, String sellerEmail) throws BadRequestException;
 }

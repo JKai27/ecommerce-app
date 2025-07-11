@@ -11,11 +11,16 @@ import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import shopeazy.com.ecommerce_app.exceptions.ForbiddenOperationException;
+import shopeazy.com.ecommerce_app.exceptions.ResourceNotFoundException;
+import shopeazy.com.ecommerce_app.model.document.Product;
+import shopeazy.com.ecommerce_app.model.document.User;
 import shopeazy.com.ecommerce_app.repository.ProductRepository;
-import shopeazy.com.ecommerce_app.service.contracts.ProductImageUploadService;
+import shopeazy.com.ecommerce_app.repository.UserRepository;
+import shopeazy.com.ecommerce_app.service.contracts.ProductImagesManagementService;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,13 +34,21 @@ import java.util.UUID;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ProductImageUploadServiceImpl implements ProductImageUploadService {
+public class ProductImagesManagementServiceImpl implements ProductImagesManagementService {
     private final ProductRepository productRepository;
     private final GridFSBucket gridFSBucket;
     private final GridFsTemplate gridFsTemplate;
+    private final UserRepository userRepository;
 
-    public List<String> uploadImages(List<MultipartFile> files, String productId) throws BadRequestException {
+    public List<String> uploadImages(List<MultipartFile> files, String productId, String sellerEmail) throws BadRequestException {
         List<String> imageUrls = new ArrayList<>();
+
+        // Only the valid Seller/Owner can upload images of relevant product
+        validateProductOwner(productId, sellerEmail);
+
+        Product product = productRepository.findById(productId).orElseThrow(ResourceNotFoundException::new);
+
+
         for (MultipartFile file : files) {
 
             // Validate file type
@@ -61,9 +74,21 @@ public class ProductImageUploadServiceImpl implements ProductImageUploadService 
                 throw new BadRequestException("Error uploading file: " + exception.getMessage());
             }
 
-
+            // Save images to product and in DB
+            product.setImages(imageUrls);
+            productRepository.save(product);
         }
         return imageUrls;
+    }
+
+    private void validateProductOwner(String productId, String sellerEmail) {
+        User seller = userRepository.findByEmail(sellerEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User with email " + sellerEmail + " not found"));
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product with id " + productId + " not found"));
+        if (!product.getSellerId().equals(seller.getId())) {
+            throw new AccessDeniedException("Seller does not own this product.");
+        }
     }
 
 
@@ -94,7 +119,6 @@ public class ProductImageUploadServiceImpl implements ProductImageUploadService 
         log.info("Checking for the existing file with hash={} -> found={}", fileHash, existingFile);
         return existingFile != null;
     }
-
 
 
     private String computeSHA256HASH(MultipartFile file) throws IOException, NoSuchAlgorithmException {

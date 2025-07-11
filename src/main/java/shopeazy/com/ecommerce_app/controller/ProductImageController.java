@@ -13,7 +13,7 @@ import shopeazy.com.ecommerce_app.model.document.User;
 import shopeazy.com.ecommerce_app.model.dto.request.ImageUploadRequestDTO;
 import shopeazy.com.ecommerce_app.repository.ProductRepository;
 import shopeazy.com.ecommerce_app.repository.UserRepository;
-import shopeazy.com.ecommerce_app.service.contracts.ProductImageUploadService;
+import shopeazy.com.ecommerce_app.service.contracts.ProductImagesManagementService;
 
 import java.nio.file.AccessDeniedException;
 import java.security.Principal;
@@ -24,7 +24,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/api/products")
 public class ProductImageController {
-    private final ProductImageUploadService productImageUploadService;
+    private final ProductImagesManagementService productImagesManagementService;
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
 
@@ -34,29 +34,11 @@ public class ProductImageController {
     public ResponseEntity<List<String>> uploadImages(
             @PathVariable String productId,
             @Valid @ModelAttribute ImageUploadRequestDTO imageUploadRequestDTO,
-            Principal principal) throws AccessDeniedException, BadRequestException {
+            Principal principal) throws BadRequestException {
 
-        // Get the seller's email from the principal (authenticated user)
-        String sellerEmail = principal.getName();
-
-        // Fetch the seller (user) based on email
-        User seller = userRepository.findByEmail(sellerEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
-
-        // Validate that the seller owns the product
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-
-        if (!product.getSellerId().equals(seller.getId())) {
-            throw new AccessDeniedException("Seller does not own this product.");
-        }
-
-        List<String> imageUrls = productImageUploadService.uploadImages(imageUploadRequestDTO.getFiles(), productId);
-        product.setImages(imageUrls);
-        productRepository.save(product);
+        List<String> imageUrls = productImagesManagementService
+                .uploadImages(imageUploadRequestDTO.getFiles(), productId, principal.getName());
 
         return ResponseEntity.ok(imageUrls);
     }
-
-
 }
