@@ -1,2 +1,18 @@
+# IntelliJ / JetBrains
 .idea/
+*.iml
+
+# Gradle cache and logs
 .gradle/
+build/
+
+# Output folders
+out/
+target/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
