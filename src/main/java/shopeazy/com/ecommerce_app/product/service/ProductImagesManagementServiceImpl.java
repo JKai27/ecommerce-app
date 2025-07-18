@@ -14,13 +14,13 @@ import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import shopeazy.com.ecommerce_app.product.dto.DeleteImagesRequest;
 import shopeazy.com.ecommerce_app.security.exception.ForbiddenOperationException;
 import shopeazy.com.ecommerce_app.common.exception.ResourceNotFoundException;
 import shopeazy.com.ecommerce_app.product.model.Product;
 import shopeazy.com.ecommerce_app.user.model.User;
 import shopeazy.com.ecommerce_app.product.repository.ProductRepository;
 import shopeazy.com.ecommerce_app.user.repository.UserRepository;
-import shopeazy.com.ecommerce_app.product.service.ProductImagesManagementService;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,7 +42,6 @@ public class ProductImagesManagementServiceImpl implements ProductImagesManageme
     public List<String> uploadImages(List<MultipartFile> files, String productId, String sellerEmail) throws BadRequestException {
         List<String> imageUrls = new ArrayList<>();
 
-        // Only the valid Seller/Owner can upload images of relevant product
         validateProductOwner(productId, sellerEmail);
 
         Product product = productRepository.findById(productId).orElseThrow(ResourceNotFoundException::new);
@@ -94,14 +93,54 @@ public class ProductImagesManagementServiceImpl implements ProductImagesManageme
         log.info("Seller {} is valid to update product {}", sellerEmail, productId);
     }
 
-
-    // TODO
-    public void deleteProductImages(String productId, String sellerEmail, List<String> imageUrls) throws BadRequestException {
-        validateProductOwner(productId, sellerEmail);
+    @Override
+    public void deleteProductImages(String productId, String sellerEmail, DeleteImagesRequest request) throws BadRequestException {
         Product product = productRepository.findById(productId).orElseThrow(ResourceNotFoundException::new);
-        List<String> updatedImages = product.getImages().stream().toList();
-        log.info("List {}", updatedImages);
+        log.info("Deleting image for product with id={} and the productName is: {}", productId, product.getName());
+
+        validateProductOwner(productId, sellerEmail);
+
+        List<String> existingImages = product.getImages();
+        log.info("Available images for productId: {} are existingImages: {}", productId, existingImages);
+        if (existingImages == null || existingImages.isEmpty()) {
+            throw new BadRequestException("No images found for this product.");
+        }
+
+        Set<String> imageUrlsToDelete = new HashSet<>(request.getImageUrls());
+        List<String> updatedImages = new ArrayList<>();
+        List<String> successfullyDeleted = new ArrayList<>();
+
+        for (String url : existingImages) {
+            if (imageUrlsToDelete.contains(url)) {
+                try {
+                    ObjectId fileId = extractObjectIdFromUrl(url);
+                    gridFSBucket.delete(fileId);
+                    successfullyDeleted.add(url);
+                    log.info("Deleted image from GridFS: {}", url);
+
+                } catch (Exception e) {
+                    log.error("Error deleting image from GridFS: {} -> {}", url, e.getMessage());
+                    updatedImages.add(url); // keeping the image if the deletion fails
+                }
+            } else {
+                updatedImages.add(url);
+            }
+        }
+        product.setImages(updatedImages);
+        productRepository.save(product);
+        log.info("Updated Product {} image list after deletion. Deleted: {}", productId, successfullyDeleted);
     }
+
+    private ObjectId extractObjectIdFromUrl(String url) throws BadRequestException {
+        try {
+            String[] parts = url.split("/");
+            String hexId = parts[parts.length - 1];
+            return new ObjectId(hexId);
+        } catch (Exception e) {
+            throw new BadRequestException("Invalid image URL format: " + url);
+        }
+    }
+
 
     @Override
     public List<String> getImageUrlsForProduct(String productId, String sellerEmail) {

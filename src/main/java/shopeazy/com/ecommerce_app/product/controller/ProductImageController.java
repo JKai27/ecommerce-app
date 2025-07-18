@@ -7,6 +7,7 @@ import org.apache.coyote.BadRequestException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import shopeazy.com.ecommerce_app.product.dto.DeleteImagesRequest;
 import shopeazy.com.ecommerce_app.product.dto.ImageUploadRequestDTO;
 import shopeazy.com.ecommerce_app.product.service.ProductImagesManagementService;
 
@@ -21,7 +22,7 @@ public class ProductImageController {
     private final ProductImagesManagementService productImagesManagementService;
 
     @GetMapping("/{productId}/product-images")
-    public ResponseEntity<List<String>> getProductImages(@PathVariable String productId, Principal principal ) {
+    public ResponseEntity<List<String>> getProductImages(@PathVariable String productId, Principal principal) {
         return ResponseEntity.ok(productImagesManagementService.getImageUrlsForProduct(productId, principal.getName()));
     }
 
@@ -39,11 +40,10 @@ public class ProductImageController {
         return ResponseEntity.ok(imageUrls);
     }
 
-    // TODO
-    @DeleteMapping("/{productId}/images/{imageId}")
+    @DeleteMapping("/{productId}/images/{sellersEmail}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_SELLER')")
-    public ResponseEntity<String> deleteImage(@PathVariable String productId, @PathVariable String imageId, Principal principal){
-        productImagesManagementService.validateProductOwner(productId, principal.getName());
+    public ResponseEntity<String> deleteImage(@PathVariable String productId, @PathVariable String sellersEmail, @Valid @RequestBody DeleteImagesRequest request) throws BadRequestException {
+        productImagesManagementService.deleteProductImages(productId, sellersEmail, request);
         return ResponseEntity.noContent().build();
     }
 }

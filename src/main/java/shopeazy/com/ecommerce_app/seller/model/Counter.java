@@ -1,4 +1,4 @@
-package shopeazy.com.ecommerce_app.common.model;
+package shopeazy.com.ecommerce_app.seller.model;
 
 import lombok.Data;
 import org.springframework.data.annotation.Id;
