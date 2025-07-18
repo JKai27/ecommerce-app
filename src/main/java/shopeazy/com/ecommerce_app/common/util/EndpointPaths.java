@@ -10,6 +10,8 @@ public final class EndpointPaths {
     public static final String USERS_WILDCARD = "/api/users/**";
     public static final String PRODUCTS = "/api/products";
     public static final String SELLERS_WILDCARD = "/api/sellers/**";
+    public static final String PRODUCT_IMAGES_WILDCARD = "/api/products/*/images/**";
+
 
     // Public (no authentication required)
     public static final String[] PUBLIC_ENDPOINTS = {
@@ -26,7 +28,7 @@ public final class EndpointPaths {
     };
 
     public static final String[] SELLER_ENDPOINTS = {
-            PRODUCTS, SELLERS_WILDCARD, "/api/products/{productId}/images"
+            PRODUCTS, SELLERS_WILDCARD, PRODUCT_IMAGES_WILDCARD
     };
 
     // Admin-only DELETE

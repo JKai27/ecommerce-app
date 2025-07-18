@@ -23,6 +23,7 @@ import shopeazy.com.ecommerce_app.security.config.CustomAccessDeniedHandler;
 import shopeazy.com.ecommerce_app.security.config.CustomAuthenticationEntryPoint;
 import shopeazy.com.ecommerce_app.security.jwt.JwtAuthFilter;
 import shopeazy.com.ecommerce_app.security.jwt.JwtService;
+
 import static shopeazy.com.ecommerce_app.common.util.EndpointPaths.*;
 
 import java.util.List;
@@ -47,7 +48,8 @@ public class SecurityConfig {
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                         .requestMatchers(HttpMethod.GET, ADMIN_GET_ENDPOINTS).hasRole(ROLE_ADMIN)
                         .requestMatchers(HttpMethod.POST, SELLER_ENDPOINTS).hasRole(ROLE_SELLER)
-                        .requestMatchers(HttpMethod.DELETE,ADMIN_DELETE_ENDPOINTS ).hasRole(ROLE_ADMIN)
+                        .requestMatchers(HttpMethod.DELETE, ADMIN_DELETE_ENDPOINTS).hasRole(ROLE_ADMIN)
+                        .requestMatchers(HttpMethod.DELETE, PRODUCT_IMAGES_WILDCARD).hasAnyRole(ROLE_SELLER, ROLE_ADMIN)
                         .requestMatchers(HttpMethod.PATCH, ADMIN_PATCH_ENDPOINTS).hasRole(ROLE_ADMIN)
                         .requestMatchers(HttpMethod.PUT, ADMIN_PUT_ENDPOINTS).hasRole(ROLE_ADMIN)
                         .requestMatchers("/api/auth/user/**").hasRole(ROLE_ADMIN)

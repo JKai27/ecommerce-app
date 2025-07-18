@@ -15,6 +15,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import shopeazy.com.ecommerce_app.product.dto.DeleteImagesRequest;
+import shopeazy.com.ecommerce_app.product.dto.UpdateImagesOrderRequest;
 import shopeazy.com.ecommerce_app.security.exception.ForbiddenOperationException;
 import shopeazy.com.ecommerce_app.common.exception.ResourceNotFoundException;
 import shopeazy.com.ecommerce_app.product.model.Product;
@@ -94,6 +95,50 @@ public class ProductImagesManagementServiceImpl implements ProductImagesManageme
     }
 
     @Override
+    public List<String> updateImageOrder(String productId, UpdateImagesOrderRequest orderRequest, String sellerEmail) {
+        validateProductOwner(productId, sellerEmail);
+        Product product = productRepository.findById(productId).orElseThrow(ResourceNotFoundException::new);
+
+        List<String> currentImages = product.getImages();
+        List<String> newOrder = validateAndExtractNewOrder(orderRequest, currentImages);
+
+        Set<String> currentSet = new HashSet<>(currentImages);
+        Set<String> newSet = new HashSet<>(newOrder);
+
+        if (!currentSet.equals(newSet)) {
+            log.warn("Image reorder failed: mismatch between current and requested image list for productId={}", productId);
+            throw new IllegalArgumentException("Image list mismatch. Reordered list must contain exactly the same images.");
+        }
+
+        if (currentImages.equals(newOrder)) {
+            log.info("Image order unchanged for productId={}", productId);
+            return currentImages;
+        }
+
+        product.setImages(newOrder);
+        productRepository.save(product);
+        log.info("Image order updated for productId={} by seller={}", productId, sellerEmail);
+        return newOrder;
+    }
+
+    private static List<String> validateAndExtractNewOrder(UpdateImagesOrderRequest orderRequest, List<String> currentImages) {
+        List<String> newOrder = orderRequest.getOrderedImageUrls();
+
+        if (currentImages == null || currentImages.isEmpty()) {
+            throw new ResourceNotFoundException("No images to reorder for this product.");
+        }
+
+        if (newOrder == null || newOrder.isEmpty()) {
+            throw new IllegalArgumentException("Image order list is empty.");
+        }
+
+        if (currentImages.size() != newOrder.size()) {
+            throw new IllegalArgumentException("Image count mismatch. Expected: " + currentImages.size());
+        }
+        return newOrder;
+    }
+
+    @Override
     public void deleteProductImages(String productId, String sellerEmail, DeleteImagesRequest request) throws BadRequestException {
         Product product = productRepository.findById(productId).orElseThrow(ResourceNotFoundException::new);
         log.info("Deleting image for product with id={} and the productName is: {}", productId, product.getName());
@@ -151,6 +196,7 @@ public class ProductImagesManagementServiceImpl implements ProductImagesManageme
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList());
     }
+
 
     private ObjectId storeFileInGridFS(MultipartFile file) throws IOException, NoSuchAlgorithmException {
         String fileHash = computeSHA256HASH(file);
