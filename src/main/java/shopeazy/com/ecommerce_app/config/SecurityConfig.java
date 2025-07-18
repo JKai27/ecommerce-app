@@ -19,11 +19,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import shopeazy.com.ecommerce_app.exceptions.CustomAccessDeniedHandler;
-import shopeazy.com.ecommerce_app.exceptions.CustomAuthenticationEntryPoint;
-import shopeazy.com.ecommerce_app.jwt.JwtAuthFilter;
-import shopeazy.com.ecommerce_app.jwt.JwtService;
-import static shopeazy.com.ecommerce_app.util.EndpointPaths.*;
+import shopeazy.com.ecommerce_app.security.config.CustomAccessDeniedHandler;
+import shopeazy.com.ecommerce_app.security.config.CustomAuthenticationEntryPoint;
+import shopeazy.com.ecommerce_app.security.jwt.JwtAuthFilter;
+import shopeazy.com.ecommerce_app.security.jwt.JwtService;
+import static shopeazy.com.ecommerce_app.common.util.EndpointPaths.*;
 
 import java.util.List;
 
