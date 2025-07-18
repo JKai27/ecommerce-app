@@ -7,9 +7,7 @@ import org.apache.coyote.BadRequestException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import shopeazy.com.ecommerce_app.product.dto.DeleteImagesRequest;
-import shopeazy.com.ecommerce_app.product.dto.UpdateImagesOrderRequest;
-import shopeazy.com.ecommerce_app.product.dto.ImageUploadRequestDTO;
+import shopeazy.com.ecommerce_app.product.dto.*;
 import shopeazy.com.ecommerce_app.product.service.ProductImagesManagementService;
 
 import java.security.Principal;
@@ -51,12 +49,14 @@ public class ProductImageController {
 
     @PatchMapping("/{productId}/images/order")
     @PreAuthorize("hasAuthority('ROLE_SELLER')")
-    public ResponseEntity<List<String>> updateImageOrder(
+    public ResponseEntity<ImageUrlsResponse> updateImageOrder(
             @PathVariable String productId,
             @Valid @RequestBody UpdateImagesOrderRequest orderRequest,
             Principal principal) {
+        ImageOrderUpdateResult result = productImagesManagementService.updateImageOrder(productId, orderRequest, principal.getName());
+        String message = result.updated() ? "Order of images updated successfully!"
+                : "Order of images is already up to date. Please change the imageURL-order in the request.";
+        return ResponseEntity.ok(new ImageUrlsResponse(result.images(), message));
 
-        List<String> updateImageOrder = productImagesManagementService.updateImageOrder(productId, orderRequest, principal.getName());
-        return ResponseEntity.ok(updateImageOrder);
     }
 }

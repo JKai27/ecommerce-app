@@ -15,6 +15,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import shopeazy.com.ecommerce_app.product.dto.DeleteImagesRequest;
+import shopeazy.com.ecommerce_app.product.dto.ImageOrderUpdateResult;
 import shopeazy.com.ecommerce_app.product.dto.UpdateImagesOrderRequest;
 import shopeazy.com.ecommerce_app.security.exception.ForbiddenOperationException;
 import shopeazy.com.ecommerce_app.common.exception.ResourceNotFoundException;
@@ -95,7 +96,7 @@ public class ProductImagesManagementServiceImpl implements ProductImagesManageme
     }
 
     @Override
-    public List<String> updateImageOrder(String productId, UpdateImagesOrderRequest orderRequest, String sellerEmail) {
+    public ImageOrderUpdateResult updateImageOrder(String productId, UpdateImagesOrderRequest orderRequest, String sellerEmail) {
         validateProductOwner(productId, sellerEmail);
         Product product = productRepository.findById(productId).orElseThrow(ResourceNotFoundException::new);
 
@@ -112,13 +113,13 @@ public class ProductImagesManagementServiceImpl implements ProductImagesManageme
 
         if (currentImages.equals(newOrder)) {
             log.info("Image order unchanged for productId={}", productId);
-            return currentImages;
+            return new ImageOrderUpdateResult(currentImages,false);
         }
 
         product.setImages(newOrder);
         productRepository.save(product);
         log.info("Image order updated for productId={} by seller={}", productId, sellerEmail);
-        return newOrder;
+        return new ImageOrderUpdateResult(newOrder,true);
     }
 
     private static List<String> validateAndExtractNewOrder(UpdateImagesOrderRequest orderRequest, List<String> currentImages) {

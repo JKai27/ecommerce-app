@@ -3,6 +3,7 @@ package shopeazy.com.ecommerce_app.product.service;
 import org.apache.coyote.BadRequestException;
 import org.springframework.web.multipart.MultipartFile;
 import shopeazy.com.ecommerce_app.product.dto.DeleteImagesRequest;
+import shopeazy.com.ecommerce_app.product.dto.ImageOrderUpdateResult;
 import shopeazy.com.ecommerce_app.product.dto.UpdateImagesOrderRequest;
 
 import java.util.List;
@@ -15,5 +16,5 @@ public interface ProductImagesManagementService {
 
     List<String> getImageUrlsForProduct(String productId, String sellerEmail);
 
-    List<String> updateImageOrder(String productId, UpdateImagesOrderRequest orderRequest, String sellerEmail);
+    ImageOrderUpdateResult updateImageOrder(String productId, UpdateImagesOrderRequest orderRequest, String sellerEmail);
 }
