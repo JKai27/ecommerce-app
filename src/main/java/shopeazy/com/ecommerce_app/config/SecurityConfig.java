@@ -47,6 +47,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                         .requestMatchers(HttpMethod.GET, ADMIN_GET_ENDPOINTS).hasRole(ROLE_ADMIN)
+                        .requestMatchers(HttpMethod.PATCH,SELLER_ENDPOINTS).hasRole(ROLE_SELLER)
                         .requestMatchers(HttpMethod.POST, SELLER_ENDPOINTS).hasRole(ROLE_SELLER)
                         .requestMatchers(HttpMethod.DELETE, ADMIN_DELETE_ENDPOINTS).hasRole(ROLE_ADMIN)
                         .requestMatchers(HttpMethod.DELETE, PRODUCT_IMAGES_WILDCARD).hasAnyRole(ROLE_SELLER, ROLE_ADMIN)

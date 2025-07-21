@@ -24,7 +24,7 @@ public class CreateProductRequest {
     private Double discount;
 
     @NotNull(message = "Stock count is required")
-    @Min(value = 0, message = "Stock count must be non-negative")
+    @Min(value = 0, message = "Stock count must be positive or 0")
     private Integer stockCount;
 
     @NotBlank(message = "Category is required")

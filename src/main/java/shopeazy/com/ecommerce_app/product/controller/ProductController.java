@@ -9,6 +9,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import shopeazy.com.ecommerce_app.common.exception.ResourceNotFoundException;
+import shopeazy.com.ecommerce_app.product.dto.ProductAvailabilityResponse;
 import shopeazy.com.ecommerce_app.product.mapper.ProductMapper;
 import shopeazy.com.ecommerce_app.product.model.Product;
 import shopeazy.com.ecommerce_app.user.model.User;
@@ -47,6 +48,12 @@ public class ProductController {
         return ResponseEntity.ok(productById);
     }
 
+    @GetMapping("/{productId}/availability")
+    public ResponseEntity<ProductAvailabilityResponse> checkProductAvailability(@PathVariable String productId) {
+        ProductAvailabilityResponse productAvailabilityResponse = productService.checkProductAvailability(productId);
+        return ResponseEntity.ok(productAvailabilityResponse);
+    }
+
     @PostMapping
     @PreAuthorize("hasAuthority('ROLE_SELLER')")
     public ResponseEntity<ProductResponseDto> registerProduct(@Valid @RequestBody CreateProductRequest request) {
@@ -54,7 +61,7 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.CREATED).body(productResponseDto);
     }
 
-    @PutMapping("/update")
+    @PatchMapping("/update")
     @PreAuthorize("hasAuthority('ROLE_SELLER')")
     public ResponseEntity<ProductResponseDto> updateOwnProduct(
             @Valid @RequestBody UpdateProductRequestDto requestDto,
@@ -76,7 +83,7 @@ public class ProductController {
     }
 
     /* Bulk Endpoints   */
-    @PutMapping("/bulk-update")
+    @PatchMapping("/bulk-update")
     @PreAuthorize("hasAuthority('ROLE_SELLER')")
     public ResponseEntity<List<ProductResponseDto>> updateOwnProductsInBulk(@Valid @RequestBody List<UpdateProductRequestDto> requestDtoList, Principal principal) {
         String sellerEmail = principal.getName();

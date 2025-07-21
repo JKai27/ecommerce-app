@@ -1,5 +1,6 @@
 package shopeazy.com.ecommerce_app.product.service;
 
+import shopeazy.com.ecommerce_app.product.dto.ProductAvailabilityResponse;
 import shopeazy.com.ecommerce_app.product.model.Product;
 import shopeazy.com.ecommerce_app.product.dto.CreateProductRequest;
 import shopeazy.com.ecommerce_app.product.dto.ProductResponseDto;
@@ -22,4 +23,5 @@ public interface ProductService {
 
     void deleteAllProductsBySellerId(String sellerId);
 
+    ProductAvailabilityResponse checkProductAvailability(String productId);
 }

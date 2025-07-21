@@ -41,7 +41,7 @@ public class UserController {
      */
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @GetMapping
-    public ResponseEntity<?> getAll() {
+    public ResponseEntity<Map<String,Object>> getAll() {
         Map<String, Object> response = new HashMap<>();
         List<UserDTO> users = userService.getAll();
         response.put("users", users);
@@ -93,7 +93,7 @@ public class UserController {
      */
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @DeleteMapping("/{userId}/delete")
-    public ResponseEntity<?> deleteUserById(@PathVariable String userId) {
+    public ResponseEntity<Map<String,Object>> deleteUserById(@PathVariable String userId) {
         Map<String, Object> response = new HashMap<>();
         String email = userService.getUserById(userId).getEmail();
 
@@ -115,7 +115,7 @@ public class UserController {
   */
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PatchMapping("/bulkStatus-update/{status}")
-    public ResponseEntity<?> updateStatusInBulk(@Valid @RequestBody UserUpdateInBulkRequest request,
+    public ResponseEntity<Map<String,Object>> updateStatusInBulk(@Valid @RequestBody UserUpdateInBulkRequest request,
                                                 @PathVariable String status) throws InvalidStatusException {
         Map<String, Object> response = new HashMap<>();
         List<UserDTO> userDTOList = userService.updateStatusInBulk(request, status);
@@ -145,7 +145,7 @@ public class UserController {
      */
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @DeleteMapping("/deleteAll")
-    public ResponseEntity<?> deleteAllUsers() {
+    public ResponseEntity<Map<String,Object>> deleteAllUsers() {
         Map<String, Object> response = new HashMap<>();
         String responseString = userService.deleteAllUsersExceptAdmins();
         response.put("message", responseString);

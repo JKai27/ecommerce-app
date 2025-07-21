@@ -28,7 +28,7 @@ public final class EndpointPaths {
     };
 
     public static final String[] SELLER_ENDPOINTS = {
-            PRODUCTS, SELLERS_WILDCARD, PRODUCT_IMAGES_WILDCARD
+            PRODUCTS, SELLERS_WILDCARD, PRODUCT_IMAGES_WILDCARD, "/api/products/**"
     };
 
     // Admin-only DELETE

@@ -3,7 +3,9 @@ package shopeazy.com.ecommerce_app.product.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import shopeazy.com.ecommerce_app.product.dto.ProductAvailabilityResponse;
 import shopeazy.com.ecommerce_app.product.exception.DuplicateProductException;
+import shopeazy.com.ecommerce_app.product.exception.ProductNotFoundException;
 import shopeazy.com.ecommerce_app.security.exception.ForbiddenOperationException;
 import shopeazy.com.ecommerce_app.common.exception.ResourceNotFoundException;
 import shopeazy.com.ecommerce_app.product.mapper.ProductMapper;
@@ -13,6 +15,7 @@ import shopeazy.com.ecommerce_app.product.dto.ProductResponseDto;
 import shopeazy.com.ecommerce_app.product.repository.ProductRepository;
 import shopeazy.com.ecommerce_app.product.dto.UpdateProductRequestDto;
 import shopeazy.com.ecommerce_app.product.validator.ProductValidator;
+
 import java.util.*;
 
 @Slf4j
@@ -103,6 +106,25 @@ public class ProductServiceImpl implements ProductService {
         log.info("Deleted {} products for sellerId={}", products.size(), sellerId);
     }
 
+    @Override
+    public ProductAvailabilityResponse checkProductAvailability(String productId) {
+        log.info("Checking product availability for productId={}", productId);
+
+        Product product = productRepository.findById(productId).orElseThrow(() -> new ResourceNotFoundException("Product with id " + productId + " doesn't exist"));
+        ProductAvailabilityResponse response = new ProductAvailabilityResponse();
+
+        if (product.getStockCount() < 1) {
+            throw new ProductNotFoundException("Product not available");
+        } else {
+            response.setAvailable(true);
+            response.setProductStockCount(product.getStockCount());
+            response.setMessage("Product with id " + productId + " is available in stock");
+        }
+
+        log.info("Product availability response: {}", response);
+        return response;
+    }
+
 
     private Product applyUpdate(Product product, UpdateProductRequestDto request) {
         ProductValidator.validatePrice(request.getPrice());
@@ -112,7 +134,7 @@ public class ProductServiceImpl implements ProductService {
         Optional.ofNullable(request.getDescription()).ifPresent(product::setDescription);
         Optional.ofNullable(request.getPrice()).ifPresent(product::setPrice);
         Optional.ofNullable(request.getDiscount()).ifPresent(product::setDiscount);
-        Optional.ofNullable(request.getStockCount()).ifPresent(product::setStockCount);
+        Optional.of(request.getStockCount()).ifPresent(product::setStockCount);
         Optional.ofNullable(request.getCategory()).ifPresent(product::setCategory);
         Optional.ofNullable(request.getStatus()).ifPresent(product::setStatus);
         return product;
