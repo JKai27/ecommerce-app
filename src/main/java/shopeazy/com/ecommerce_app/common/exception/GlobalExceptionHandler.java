@@ -9,7 +9,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import shopeazy.com.ecommerce_app.product.exception.ProductNotFoundException;
+import shopeazy.com.ecommerce_app.product.exception.ProductOutOfStockException;
 import shopeazy.com.ecommerce_app.security.exception.InvalidEmailException;
 import shopeazy.com.ecommerce_app.seller.exception.SellerAccountForTheCompanyNameAlreadyExistsException;
 import shopeazy.com.ecommerce_app.security.exception.ForbiddenOperationException;
@@ -39,7 +39,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler
-    public ResponseEntity<String> handleProductNotFoundException(ProductNotFoundException ex) {
+    public ResponseEntity<String> handleProductNotFoundException(ProductOutOfStockException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 

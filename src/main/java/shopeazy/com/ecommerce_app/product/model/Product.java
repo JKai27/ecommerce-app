@@ -9,8 +9,8 @@ import shopeazy.com.ecommerce_app.product.enums.ProductStatus;
 import java.time.Instant;
 import java.util.List;
 
-@Document
 @Data
+@Document
 public class Product {
 
     @Id

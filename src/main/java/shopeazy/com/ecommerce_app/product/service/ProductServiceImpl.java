@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import shopeazy.com.ecommerce_app.product.dto.ProductAvailabilityResponse;
 import shopeazy.com.ecommerce_app.product.exception.DuplicateProductException;
-import shopeazy.com.ecommerce_app.product.exception.ProductNotFoundException;
+import shopeazy.com.ecommerce_app.product.exception.ProductOutOfStockException;
 import shopeazy.com.ecommerce_app.security.exception.ForbiddenOperationException;
 import shopeazy.com.ecommerce_app.common.exception.ResourceNotFoundException;
 import shopeazy.com.ecommerce_app.product.mapper.ProductMapper;
@@ -111,15 +111,17 @@ public class ProductServiceImpl implements ProductService {
         log.info("Checking product availability for productId={}", productId);
 
         Product product = productRepository.findById(productId).orElseThrow(() -> new ResourceNotFoundException("Product with id " + productId + " doesn't exist"));
-        ProductAvailabilityResponse response = new ProductAvailabilityResponse();
 
         if (product.getStockCount() < 1) {
-            throw new ProductNotFoundException("Product not available");
-        } else {
-            response.setAvailable(true);
-            response.setProductStockCount(product.getStockCount());
-            response.setMessage("Product with id " + productId + " is available in stock");
+            throw new ProductOutOfStockException("Product not available");
         }
+
+        ProductAvailabilityResponse response = new ProductAvailabilityResponse();
+
+
+        response.setAvailable(true);
+        response.setProductStockCount(product.getStockCount());
+        response.setMessage("Product with id " + productId + " is available in stock");
 
         log.info("Product availability response: {}", response);
         return response;
