@@ -24,4 +24,7 @@ public interface ProductService {
     void deleteAllProductsBySellerId(String sellerId);
 
     ProductAvailabilityResponse checkProductAvailability(String productId);
+
+    void validateRequestedQuantity(String productId, int requestedQty);
+    void restoreStock(String productId, int quantityToRestore);
 }

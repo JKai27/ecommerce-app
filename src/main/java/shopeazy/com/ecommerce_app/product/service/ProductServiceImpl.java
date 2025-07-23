@@ -3,6 +3,7 @@ package shopeazy.com.ecommerce_app.product.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import shopeazy.com.ecommerce_app.cart.dto.UpdateCartRequest;
 import shopeazy.com.ecommerce_app.product.dto.ProductAvailabilityResponse;
 import shopeazy.com.ecommerce_app.product.exception.DuplicateProductException;
 import shopeazy.com.ecommerce_app.product.exception.ProductOutOfStockException;
@@ -125,6 +126,24 @@ public class ProductServiceImpl implements ProductService {
 
         log.info("Product availability response: {}", response);
         return response;
+    }
+
+    @Override
+    public void validateRequestedQuantity(String productId, int requestedQty) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+
+        if (product.getStockCount() < requestedQty) {
+            throw new ProductOutOfStockException("Not enough stock available");
+        }
+    }
+
+    @Override
+    public void restoreStock(String productId, int quantityToRestore) {
+        Product product = productRepository.findById(productId).orElseThrow(ResourceNotFoundException::new);
+        int updatedStock = product.getStockCount() + quantityToRestore;
+        product.setStockCount(updatedStock);
+        productRepository.save(product);
     }
 
 

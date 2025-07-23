@@ -1,14 +1,16 @@
 package shopeazy.com.ecommerce_app.cart.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import shopeazy.com.ecommerce_app.cart.dto.AddProductsToCartRequest;
+import shopeazy.com.ecommerce_app.cart.dto.CartResponse;
+import shopeazy.com.ecommerce_app.cart.dto.UpdateCartRequest;
+import shopeazy.com.ecommerce_app.cart.dto.UpdatedCartInfoResponse;
 import shopeazy.com.ecommerce_app.cart.service.CartService;
-import shopeazy.com.ecommerce_app.product.dto.ProductResponseDto;
+
+import java.security.Principal;
 
 @RestController
 @RequiredArgsConstructor
@@ -17,8 +19,29 @@ public class CartController {
     private final CartService cartService;
 
     @PostMapping
-    public ResponseEntity<ProductResponseDto> addProductToCart(@RequestBody AddProductsToCartRequest request) {
-        ProductResponseDto productResponseDto = cartService.addProductsToCart(request);
-        return ResponseEntity.ok(productResponseDto);
+    public ResponseEntity<CartResponse> addProductToCart(@RequestBody AddProductsToCartRequest request) {
+        CartResponse cartResponse = cartService.addProductsToCart(request);
+        return ResponseEntity.ok(cartResponse);
+    }
+
+    @PutMapping("/update")
+    public ResponseEntity<UpdatedCartInfoResponse> updateCartItem(
+            @RequestBody @Valid UpdateCartRequest request,
+            Principal principal) {
+
+        UpdatedCartInfoResponse response = cartService.updateCartItems(request, principal.getName());
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping
+    public ResponseEntity<CartResponse> viewCart(Principal principal) {
+        CartResponse cartResponse = cartService.viewCart(principal.getName());
+        return ResponseEntity.ok(cartResponse);
+    }
+
+    @DeleteMapping
+    public ResponseEntity<Void> clearCart(Principal principal) {
+        cartService.clearCart(principal.getName());
+        return ResponseEntity.noContent().build();
     }
 }

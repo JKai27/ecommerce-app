@@ -1,5 +1,6 @@
 package shopeazy.com.ecommerce_app.cart.dto;
 
+import jakarta.validation.constraints.Min;
 import lombok.Data;
 
 
@@ -7,5 +8,6 @@ import lombok.Data;
 public class AddProductsToCartRequest {
     private String productId;
     private String userId;
+    @Min(value = 1, message = "Quantity must be greater than zero")
     private int quantity;
 }
