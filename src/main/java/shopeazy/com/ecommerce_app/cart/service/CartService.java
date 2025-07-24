@@ -7,7 +7,7 @@ import shopeazy.com.ecommerce_app.cart.dto.UpdateCartRequest;
 import shopeazy.com.ecommerce_app.cart.dto.UpdatedCartInfoResponse;
 
 public interface CartService {
-    CartResponse addProductsToCart(AddProductsToCartRequest request);
+    CartResponse addProductsToCart(AddProductsToCartRequest request, String userEmail);
 
     UpdatedCartInfoResponse updateCartItems(UpdateCartRequest request, String usersEmail);
 

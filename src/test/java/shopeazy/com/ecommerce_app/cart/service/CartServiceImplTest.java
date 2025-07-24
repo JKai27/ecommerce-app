@@ -58,6 +58,7 @@ class CartServiceImplTest {
 
         User user = new User();
         user.setId("user123");
+        user.setEmail("email123");
 
         Cart cart = new Cart();
         cart.setUserId("user123");
@@ -67,7 +68,6 @@ class CartServiceImplTest {
 
         AddProductsToCartRequest request = new AddProductsToCartRequest();
         request.setProductId("product123");
-        request.setUserId("user123");
         request.setQuantity(2);
 
         ProductAvailabilityResponse mockResponse = new ProductAvailabilityResponse();
@@ -86,7 +86,7 @@ class CartServiceImplTest {
         when(modelMapper.map(any(Cart.class), eq(CartResponse.class))).thenReturn(expectedResponse);
 
         // Act
-        CartResponse actualResponse = cartService.addProductsToCart(request);
+        CartResponse actualResponse = cartService.addProductsToCart(request,"email123");
 
         // Assert
         assertEquals(expectedResponse, actualResponse);

@@ -13,6 +13,7 @@ import java.util.List;
 public class CartResponse {
     @NotNull
     private String userId;
+    private String userEmail;
 
     private List<CartItem> items;
 

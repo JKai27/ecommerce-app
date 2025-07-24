@@ -46,20 +46,24 @@ public class CartServiceIntegrationTest {
 
         User user = new User();
         user.setId("user123");
+        user.setEmail("email123");
         userRepository.save(user);
     }
 
     @Test
     void testAddToCart_Integration() {
         AddProductsToCartRequest request = new AddProductsToCartRequest();
-        request.setUserId("user123");
         request.setProductId("product123");
         request.setQuantity(2);
 
-        CartResponse response = cartService.addProductsToCart(request);
+        String userEmail = "email123";
+
+        CartResponse response = cartService.addProductsToCart(request, userEmail);
 
         assertNotNull(response);
-        assertEquals("user123", response.getUserId());
-        assertEquals(1,response.getItems().size());
+        assertEquals(userEmail, response.getUserEmail());
+        assertEquals(1, response.getItems().size());
+        assertEquals("product123", response.getItems().get(0).getProductId());
+        assertEquals(2, response.getItems().get(0).getProductQuantity());
     }
 }

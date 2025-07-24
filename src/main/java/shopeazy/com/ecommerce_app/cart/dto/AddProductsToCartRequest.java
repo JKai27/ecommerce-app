@@ -7,7 +7,6 @@ import lombok.Data;
 @Data
 public class AddProductsToCartRequest {
     private String productId;
-    private String userId;
     @Min(value = 1, message = "Quantity must be greater than zero")
     private int quantity;
 }

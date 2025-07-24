@@ -19,8 +19,9 @@ public class CartController {
     private final CartService cartService;
 
     @PostMapping
-    public ResponseEntity<CartResponse> addProductToCart(@RequestBody AddProductsToCartRequest request) {
-        CartResponse cartResponse = cartService.addProductsToCart(request);
+    public ResponseEntity<CartResponse> addProductToCart(@RequestBody AddProductsToCartRequest request, Principal principal) {
+        CartResponse cartResponse = cartService.addProductsToCart(request, principal.getName());
+        cartResponse.setUserEmail(principal.getName());
         return ResponseEntity.ok(cartResponse);
     }
 
@@ -36,6 +37,7 @@ public class CartController {
     @GetMapping
     public ResponseEntity<CartResponse> viewCart(Principal principal) {
         CartResponse cartResponse = cartService.viewCart(principal.getName());
+        cartResponse.setUserEmail(principal.getName());
         return ResponseEntity.ok(cartResponse);
     }
 

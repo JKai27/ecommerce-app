@@ -12,8 +12,10 @@ import shopeazy.com.ecommerce_app.cart.dto.UpdatedCartInfoResponse;
 import shopeazy.com.ecommerce_app.cart.enums.CartAction;
 import shopeazy.com.ecommerce_app.cart.model.Cart;
 import shopeazy.com.ecommerce_app.cart.model.pojo.CartItem;
+import shopeazy.com.ecommerce_app.cart.model.pojo.RemovedProductItem;
 import shopeazy.com.ecommerce_app.cart.repository.CartRepository;
 import shopeazy.com.ecommerce_app.common.exception.ResourceNotFoundException;
+import shopeazy.com.ecommerce_app.product.dto.ProductAvailabilityResponse;
 import shopeazy.com.ecommerce_app.product.model.Product;
 import shopeazy.com.ecommerce_app.product.repository.ProductRepository;
 import shopeazy.com.ecommerce_app.product.service.ProductService;
@@ -23,6 +25,7 @@ import shopeazy.com.ecommerce_app.user.repository.UserRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -35,22 +38,29 @@ public class CartServiceImpl implements CartService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
+    private static final String MISSING_USER_IN_DB = "User not found";
 
     @Override
     @Transactional
-    public CartResponse addProductsToCart(AddProductsToCartRequest request) {
+    public CartResponse addProductsToCart(AddProductsToCartRequest request, String userEmail) {
         Product product = productRepository.findById(request.getProductId())
                 .orElseThrow(ResourceNotFoundException::new);
 
 
-        User user = userRepository.findById(request.getUserId())
+        User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(ResourceNotFoundException::new);
 
-        productService.checkProductAvailability(request.getProductId());
+        ProductAvailabilityResponse response = productService.checkProductAvailability(request.getProductId());
+        log.info("Product availability response and count of stock: {}, {}", response.isAvailable(), response.getProductStockCount());
         productService.validateRequestedQuantity(request.getProductId(), request.getQuantity());
 
         // updating product stock
+        log.info("Product count before update: {}", product.getStockCount());
+        log.info("Product count update request: {}", request.getQuantity());
+
         product.setStockCount(product.getStockCount() - request.getQuantity());
+        log.info("Product count after update: {}", product.getStockCount());
+
         productRepository.save(product);
 
 
@@ -83,41 +93,38 @@ public class CartServiceImpl implements CartService {
 
         cart.setUpdatedAt(Instant.now());
         cartRepository.save(cart);
+        CartResponse cartResponse = modelMapper.map(cart, CartResponse.class);
+        cartResponse.setUserEmail(user.getEmail());
+        return cartResponse;
 
-
-        return modelMapper.map(cart, CartResponse.class);
 
     }
 
     @Override
     @Transactional
-    public UpdatedCartInfoResponse updateCartItems(UpdateCartRequest request, String usersEmail) {
-        log.info("Updating cart for userEmail={}, request={}", usersEmail, request);
+    public UpdatedCartInfoResponse updateCartItems(UpdateCartRequest request, String userEmail) {
+        log.info("Updating cart for userEmail={}, request={}", userEmail, request);
 
-        // Validate quantity
         if (request.getQuantity() <= 0) {
             throw new IllegalArgumentException("Quantity must be greater than zero");
         }
 
-        // Validate product
         Product product = productRepository.findById(request.getProductId())
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
-        // Validate user
-        User user = userRepository.findByEmail(usersEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
-        log.info("Fetching cart for userId={}", user.getId());
-
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new ResourceNotFoundException(MISSING_USER_IN_DB));
 
         Cart cart = getCartOwnedBy(user);
 
-        // Find product in cart
         Optional<CartItem> existingItemOpt = cart.getItems().stream()
                 .filter(item -> item.getProductId().equals(request.getProductId()))
                 .findFirst();
 
         CartAction action = Objects.requireNonNull(request.getAction(), "Action must not be null");
+
+        UpdatedCartInfoResponse response = new UpdatedCartInfoResponse();
+        List<RemovedProductItem> removed = new ArrayList<>();
 
         switch (action) {
             case ADD -> {
@@ -151,27 +158,41 @@ public class CartServiceImpl implements CartService {
                 int currentQty = item.getProductQuantity();
                 int removeQty = request.getQuantity();
 
+                RemovedProductItem removedItem = new RemovedProductItem();
+                removedItem.setProductId(product.getId());
+
                 if (removeQty >= currentQty) {
                     cart.getItems().remove(item);
+                    removedItem.setQuantity(currentQty);
                     productService.restoreStock(product.getId(), currentQty);
                     log.info("Removed product {} completely from cart", product.getId());
                 } else {
                     item.setProductQuantity(currentQty - removeQty);
+                    removedItem.setQuantity(removeQty);
                     productService.restoreStock(product.getId(), removeQty);
                     log.info("Reduced quantity of product {} in cart", product.getId());
                 }
+
+                removed.add(removedItem);
             }
         }
 
         cart.setUpdatedAt(Instant.now());
         cartRepository.save(cart);
 
-        return modelMapper.map(cart, UpdatedCartInfoResponse.class);
+        CartResponse cartResponse = modelMapper.map(cart, CartResponse.class);
+        cartResponse.setUserEmail(user.getEmail());
+
+        response.setCart(cartResponse);
+        response.setRemovedProducts(removed);
+
+        return response;
     }
+
     @Override
     public CartResponse viewCart(String userEmail) {
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(MISSING_USER_IN_DB));
 
         Cart cart = cartRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("No cart found for user"));
@@ -183,7 +204,7 @@ public class CartServiceImpl implements CartService {
     @Override
     public void clearCart(String userEmail) {
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(MISSING_USER_IN_DB));
 
         Cart cart = cartRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
