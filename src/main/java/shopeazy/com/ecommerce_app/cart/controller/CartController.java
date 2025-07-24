@@ -11,6 +11,7 @@ import shopeazy.com.ecommerce_app.cart.dto.UpdatedCartInfoResponse;
 import shopeazy.com.ecommerce_app.cart.service.CartService;
 
 import java.security.Principal;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -42,8 +43,10 @@ public class CartController {
     }
 
     @DeleteMapping
-    public ResponseEntity<Void> clearCart(Principal principal) {
+    public ResponseEntity<Map<String, String>> clearCart(Principal principal) {
         cartService.clearCart(principal.getName());
-        return ResponseEntity.noContent().build();
+        String message = "Cart for user " + principal.getName() + " has been cleared";
+        return ResponseEntity.ok(Map.of("message", message));
     }
+
 }
