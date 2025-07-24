@@ -14,6 +14,7 @@ import shopeazy.com.ecommerce_app.security.exception.InvalidEmailException;
 import shopeazy.com.ecommerce_app.seller.exception.SellerAccountForTheCompanyNameAlreadyExistsException;
 import shopeazy.com.ecommerce_app.security.exception.ForbiddenOperationException;
 import shopeazy.com.ecommerce_app.product.exception.DuplicateProductException;
+import shopeazy.com.ecommerce_app.shopping_cart.exception.ProductNotInCartException;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -42,6 +43,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleProductNotFoundException(ProductOutOfStockException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
+    @ExceptionHandler
+    public ResponseEntity<String> handleProductNotInCartException(ProductNotInCartException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
 
     @ExceptionHandler(ForbiddenOperationException.class)
     public ResponseEntity<Map<String, Object>> handleForbiddenOperation(ForbiddenOperationException ex, HttpServletRequest request) {

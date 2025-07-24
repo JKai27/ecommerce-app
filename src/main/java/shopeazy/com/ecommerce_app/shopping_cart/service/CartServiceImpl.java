@@ -10,6 +10,7 @@ import shopeazy.com.ecommerce_app.shopping_cart.dto.CartResponse;
 import shopeazy.com.ecommerce_app.shopping_cart.dto.UpdateCartRequest;
 import shopeazy.com.ecommerce_app.shopping_cart.dto.UpdatedCartInfoResponse;
 import shopeazy.com.ecommerce_app.shopping_cart.enums.CartAction;
+import shopeazy.com.ecommerce_app.shopping_cart.exception.ProductNotInCartException;
 import shopeazy.com.ecommerce_app.shopping_cart.model.Cart;
 import shopeazy.com.ecommerce_app.shopping_cart.model.pojo.CartItem;
 import shopeazy.com.ecommerce_app.shopping_cart.model.pojo.RemovedProductItem;
@@ -148,13 +149,19 @@ public class CartServiceImpl implements CartService {
                 product.setStockCount(product.getStockCount() - request.getQuantity());
                 productRepository.save(product);
             }
-
             case REMOVE -> {
                 if (existingItemOpt.isEmpty()) {
-                    throw new IllegalArgumentException("Product not found in cart");
+                    log.warn("User {} tried to remove product {} not in cart", user.getEmail(), request.getProductId());
+                    throw new ProductNotInCartException("The cart is already empty.");
                 }
 
                 CartItem item = existingItemOpt.get();
+
+                if (item.getProductQuantity() == 0) {
+                    log.warn("Attempted to remove product {} from cart, but quantity is already 0", product.getId());
+                    throw new IllegalStateException("Product quantity is already 0 in the cart");
+                }
+
                 int currentQty = item.getProductQuantity();
                 int removeQty = request.getQuantity();
 
@@ -175,6 +182,7 @@ public class CartServiceImpl implements CartService {
 
                 removed.add(removedItem);
             }
+
         }
 
         cart.setUpdatedAt(Instant.now());
