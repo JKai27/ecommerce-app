@@ -3,7 +3,6 @@ package shopeazy.com.ecommerce_app.product.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import shopeazy.com.ecommerce_app.cart.dto.UpdateCartRequest;
 import shopeazy.com.ecommerce_app.product.dto.ProductAvailabilityResponse;
 import shopeazy.com.ecommerce_app.product.exception.DuplicateProductException;
 import shopeazy.com.ecommerce_app.product.exception.ProductOutOfStockException;

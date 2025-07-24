@@ -1,7 +1,7 @@
-package shopeazy.com.ecommerce_app.cart.repository;
+package shopeazy.com.ecommerce_app.shopping_cart.repository;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
-import shopeazy.com.ecommerce_app.cart.model.Cart;
+import shopeazy.com.ecommerce_app.shopping_cart.model.Cart;
 
 import java.util.Optional;
 

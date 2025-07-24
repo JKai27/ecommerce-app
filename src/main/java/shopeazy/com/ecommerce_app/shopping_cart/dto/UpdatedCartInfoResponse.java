@@ -1,7 +1,7 @@
-package shopeazy.com.ecommerce_app.cart.dto;
+package shopeazy.com.ecommerce_app.shopping_cart.dto;
 
 import lombok.Data;
-import shopeazy.com.ecommerce_app.cart.model.pojo.RemovedProductItem;
+import shopeazy.com.ecommerce_app.shopping_cart.model.pojo.RemovedProductItem;
 
 import java.util.List;
 

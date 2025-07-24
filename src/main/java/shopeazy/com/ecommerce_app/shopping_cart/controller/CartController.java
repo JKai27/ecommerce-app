@@ -1,14 +1,14 @@
-package shopeazy.com.ecommerce_app.cart.controller;
+package shopeazy.com.ecommerce_app.shopping_cart.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import shopeazy.com.ecommerce_app.cart.dto.AddProductsToCartRequest;
-import shopeazy.com.ecommerce_app.cart.dto.CartResponse;
-import shopeazy.com.ecommerce_app.cart.dto.UpdateCartRequest;
-import shopeazy.com.ecommerce_app.cart.dto.UpdatedCartInfoResponse;
-import shopeazy.com.ecommerce_app.cart.service.CartService;
+import shopeazy.com.ecommerce_app.shopping_cart.dto.AddProductsToCartRequest;
+import shopeazy.com.ecommerce_app.shopping_cart.dto.CartResponse;
+import shopeazy.com.ecommerce_app.shopping_cart.dto.UpdateCartRequest;
+import shopeazy.com.ecommerce_app.shopping_cart.dto.UpdatedCartInfoResponse;
+import shopeazy.com.ecommerce_app.shopping_cart.service.CartService;
 
 import java.security.Principal;
 import java.util.Map;

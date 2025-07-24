@@ -1,4 +1,4 @@
-package shopeazy.com.ecommerce_app.cart.model.pojo;
+package shopeazy.com.ecommerce_app.shopping_cart.model.pojo;
 
 import lombok.Data;
 

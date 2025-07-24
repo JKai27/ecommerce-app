@@ -1,4 +1,4 @@
-package shopeazy.com.ecommerce_app.cart.dto;
+package shopeazy.com.ecommerce_app.shopping_cart.dto;
 
 import jakarta.validation.constraints.Min;
 import lombok.Data;

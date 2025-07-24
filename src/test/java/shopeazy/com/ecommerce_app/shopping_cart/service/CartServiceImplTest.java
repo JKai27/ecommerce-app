@@ -1,4 +1,4 @@
-package shopeazy.com.ecommerce_app.cart.service;
+package shopeazy.com.ecommerce_app.shopping_cart.service;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -6,10 +6,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
-import shopeazy.com.ecommerce_app.cart.dto.AddProductsToCartRequest;
-import shopeazy.com.ecommerce_app.cart.dto.CartResponse;
-import shopeazy.com.ecommerce_app.cart.model.Cart;
-import shopeazy.com.ecommerce_app.cart.repository.CartRepository;
+import shopeazy.com.ecommerce_app.shopping_cart.dto.AddProductsToCartRequest;
+import shopeazy.com.ecommerce_app.shopping_cart.dto.CartResponse;
+import shopeazy.com.ecommerce_app.shopping_cart.model.Cart;
+import shopeazy.com.ecommerce_app.shopping_cart.repository.CartRepository;
 import shopeazy.com.ecommerce_app.product.dto.ProductAvailabilityResponse;
 import shopeazy.com.ecommerce_app.product.model.Product;
 import shopeazy.com.ecommerce_app.product.repository.ProductRepository;

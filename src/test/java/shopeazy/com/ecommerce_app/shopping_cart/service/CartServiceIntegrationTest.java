@@ -1,4 +1,4 @@
-package shopeazy.com.ecommerce_app.cart.service;
+package shopeazy.com.ecommerce_app.shopping_cart.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -6,9 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.AutoConfigureDataMongo;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
-import shopeazy.com.ecommerce_app.cart.dto.AddProductsToCartRequest;
-import shopeazy.com.ecommerce_app.cart.dto.CartResponse;
-import shopeazy.com.ecommerce_app.cart.repository.CartRepository;
+import shopeazy.com.ecommerce_app.shopping_cart.dto.AddProductsToCartRequest;
+import shopeazy.com.ecommerce_app.shopping_cart.dto.CartResponse;
+import shopeazy.com.ecommerce_app.shopping_cart.repository.CartRepository;
 import shopeazy.com.ecommerce_app.product.model.Product;
 import shopeazy.com.ecommerce_app.product.repository.ProductRepository;
 import shopeazy.com.ecommerce_app.user.model.User;
