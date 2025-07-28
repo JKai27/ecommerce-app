@@ -37,7 +37,7 @@ public final class EndpointPaths {
     };
 
     public static final String[] ADMIN_PATCH_ENDPOINTS = {
-            USERS_WILDCARD, SELLERS_WILDCARD
+            USERS_WILDCARD, SELLERS_WILDCARD, "/api/sellers/*/status", "/api/sellers/bulk-status"
     };
 
     public static final String[] ADMIN_PUT_ENDPOINTS = {

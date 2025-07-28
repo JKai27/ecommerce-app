@@ -47,14 +47,13 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                         .requestMatchers(HttpMethod.GET, ADMIN_GET_ENDPOINTS).hasRole(ROLE_ADMIN)
+                        .requestMatchers(HttpMethod.PATCH, ADMIN_PATCH_ENDPOINTS).hasRole(ROLE_ADMIN)
                         .requestMatchers(HttpMethod.PATCH,SELLER_ENDPOINTS).hasRole(ROLE_SELLER)
                         .requestMatchers(HttpMethod.POST, SELLER_ENDPOINTS).hasRole(ROLE_SELLER)
                         .requestMatchers(HttpMethod.DELETE, ADMIN_DELETE_ENDPOINTS).hasRole(ROLE_ADMIN)
                         .requestMatchers(HttpMethod.DELETE, PRODUCT_IMAGES_WILDCARD).hasAnyRole(ROLE_SELLER, ROLE_ADMIN)
-                        .requestMatchers(HttpMethod.PATCH, ADMIN_PATCH_ENDPOINTS).hasRole(ROLE_ADMIN)
                         .requestMatchers(HttpMethod.PUT, ADMIN_PUT_ENDPOINTS).hasRole(ROLE_ADMIN)
                         .requestMatchers("/api/auth/user/**").hasRole(ROLE_ADMIN)
-
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -63,9 +62,11 @@ public class SecurityConfig {
                         .authenticationEntryPoint(new CustomAuthenticationEntryPoint())
                 )
                 .addFilterBefore(new JwtAuthFilter(jwtService, userDetailsService), UsernamePasswordAuthenticationFilter.class);
-
         return http.build();
     }
+
+
+
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {

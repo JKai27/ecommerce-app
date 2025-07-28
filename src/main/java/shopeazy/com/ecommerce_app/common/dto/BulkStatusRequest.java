@@ -16,6 +16,4 @@ public class BulkStatusRequest {
     @NotNull
     @Pattern(regexp = "ACTIVE|BLOCKED", flags = Pattern.Flag.CASE_INSENSITIVE, message = "Status must be either ACTIVE or BLOCKED")
     private String status;
-
-
 }

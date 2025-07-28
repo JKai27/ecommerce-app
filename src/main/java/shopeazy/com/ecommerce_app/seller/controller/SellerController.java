@@ -106,7 +106,7 @@ public class SellerController {
     }
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    @PutMapping("/bulk-status")
+    @PatchMapping("/bulk-status")
     public ResponseEntity<ApiResponse<List<SellerProfileResponse>>> updateSellerStatusesInBulk(
             @RequestBody BulkStatusRequest request) {
         try {
