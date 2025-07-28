@@ -70,7 +70,7 @@ public class ProductController {
         return ResponseEntity.ok(productResponseDto);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_SELLER')")
     @DeleteMapping("{productId}")
     public ResponseEntity<String> deleteProductById(@PathVariable String productId) {
         productService.deleteProductById(productId);

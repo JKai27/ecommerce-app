@@ -3,6 +3,7 @@ package shopeazy.com.ecommerce_app.seller.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import shopeazy.com.ecommerce_app.common.UniqueReadableNumberService;
 import shopeazy.com.ecommerce_app.security.enums.RoleType;
 import shopeazy.com.ecommerce_app.seller.enums.SellerStatus;
 import shopeazy.com.ecommerce_app.security.exception.InvalidEmailException;
@@ -19,9 +20,7 @@ import shopeazy.com.ecommerce_app.seller.dto.SellerProfileResponse;
 import shopeazy.com.ecommerce_app.product.repository.ProductRepository;
 import shopeazy.com.ecommerce_app.seller.repository.SellerProfileRepository;
 import shopeazy.com.ecommerce_app.user.repository.UserRepository;
-import shopeazy.com.ecommerce_app.seller.service.SellerNumberService;
 import shopeazy.com.ecommerce_app.security.service.RoleAssignmentService;
-import shopeazy.com.ecommerce_app.seller.service.SellerProfileService;
 import shopeazy.com.ecommerce_app.security.service.PermissionResolverService;
 
 import java.time.Instant;
@@ -35,7 +34,7 @@ import java.util.Set;
 public class SellerProfileServiceImpl implements SellerProfileService {
     private final UserRepository userRepository;
     private final SellerProfileRepository sellerProfileRepository;
-    private final SellerNumberService sellerNumberService;
+    private final UniqueReadableNumberService uniqueReadableNumberService;
     private final ProductRepository productRepository;
     private final RoleAssignmentService roleAssignmentService;
     private final PermissionResolverService permissionResolverService;
@@ -104,7 +103,7 @@ public class SellerProfileServiceImpl implements SellerProfileService {
         seller.setSellerStatus(SellerStatus.PENDING);
         seller.setProductCount(0);
 
-        int nextSeq = sellerNumberService.getNextSequence("sellerNumber");
+        int nextSeq = uniqueReadableNumberService.getNextSequence("sellerNumber");
         String sellerNumber = String.format("%06d", nextSeq);
         seller.setSellerNumber(sellerNumber);
 
@@ -238,7 +237,7 @@ public class SellerProfileServiceImpl implements SellerProfileService {
     @Override
     public void deleteAllSellers() {
         sellerProfileRepository.deleteAll();
-        sellerNumberService.resetSequence("sellerNumber");
+        uniqueReadableNumberService.resetSequence("sellerNumber");
     }
 
 

@@ -17,6 +17,7 @@ import shopeazy.com.ecommerce_app.product.dto.UpdateProductRequestDto;
 import shopeazy.com.ecommerce_app.product.validator.ProductValidator;
 import shopeazy.com.ecommerce_app.seller.model.Seller;
 import shopeazy.com.ecommerce_app.seller.repository.SellerProfileRepository;
+import shopeazy.com.ecommerce_app.common.UniqueReadableNumberService;
 
 import java.util.*;
 
@@ -26,6 +27,7 @@ import java.util.*;
 public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final SellerProfileRepository sellerProfileRepository;
+    private final UniqueReadableNumberService uniqueReadableNumberService;
 
     @Override
     public List<Product> findAll() {
@@ -62,7 +64,9 @@ public class ProductServiceImpl implements ProductService {
         }
         Product productToRegister = new Product();
 
-
+        int sequence = uniqueReadableNumberService.getNextSequence("product");
+        String productNumber = String.format("%06d", sequence); // z. B. "000123"
+        productToRegister.setProductNumber(productNumber);
         productToRegister.setName(request.getName());
         productToRegister.setDescription(request.getDescription());
         productToRegister.setPrice(request.getPrice());

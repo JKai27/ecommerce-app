@@ -7,6 +7,7 @@ import shopeazy.com.ecommerce_app.seller.mapper.SellerMapper;
 import shopeazy.com.ecommerce_app.seller.model.Seller;
 
 
+
 @Component
 public class ProductMapper {
     private ProductMapper() {
@@ -17,6 +18,7 @@ public class ProductMapper {
 
         ProductResponseDto dto = new ProductResponseDto();
         dto.setId(product.getId());
+        dto.setProductNumber(product.getProductNumber());
         dto.setName(product.getName());
         dto.setDescription(product.getDescription());
         dto.setPrice(product.getPrice());

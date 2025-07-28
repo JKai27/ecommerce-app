@@ -11,6 +11,7 @@ public class CreateProductRequest {
 
     @NotBlank(message = "Product name is required")
     private String name;
+    private String productNumber;
 
     private String description;
 

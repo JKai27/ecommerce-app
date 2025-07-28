@@ -1,7 +1,9 @@
 package shopeazy.com.ecommerce_app.product.model;
 
 import lombok.Data;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 import jakarta.validation.constraints.*;
 import shopeazy.com.ecommerce_app.product.enums.ProductStatus;
@@ -15,6 +17,8 @@ public class Product {
 
     @Id
     private String id;
+
+    private String productNumber;
 
     @NotBlank
     private String name;
@@ -45,7 +49,8 @@ public class Product {
 
     @NotNull
     private ProductStatus status;
-
+    @CreatedDate
     private Instant createdAt;
+    @LastModifiedDate
     private Instant updatedAt;
 }

@@ -1,4 +1,4 @@
-package shopeazy.com.ecommerce_app.seller.service;
+package shopeazy.com.ecommerce_app.common;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
@@ -12,7 +12,7 @@ import shopeazy.com.ecommerce_app.seller.model.Counter;
 
 @Service
 @RequiredArgsConstructor
-public class SellerNumberService {
+public class UniqueReadableNumberService {
     private final MongoTemplate mongoTemplate;
 
     public int getNextSequence(String seqName) {
