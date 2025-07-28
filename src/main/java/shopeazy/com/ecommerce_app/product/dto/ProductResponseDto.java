@@ -1,6 +1,7 @@
 package shopeazy.com.ecommerce_app.product.dto;
 
 import lombok.Data;
+import shopeazy.com.ecommerce_app.seller.dto.SellerDto;
 
 import java.time.Instant;
 import java.util.List;
@@ -16,7 +17,7 @@ public class ProductResponseDto {
     private String category;
     private List<String> images;
     private String status;
-    private String sellerId;
+    private SellerDto seller;
     private Instant createdAt;
     private Instant updatedAt;
 }

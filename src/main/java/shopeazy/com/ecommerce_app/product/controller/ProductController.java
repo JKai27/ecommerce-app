@@ -10,8 +10,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import shopeazy.com.ecommerce_app.common.exception.ResourceNotFoundException;
 import shopeazy.com.ecommerce_app.product.dto.ProductAvailabilityResponse;
-import shopeazy.com.ecommerce_app.product.mapper.ProductMapper;
-import shopeazy.com.ecommerce_app.product.model.Product;
 import shopeazy.com.ecommerce_app.user.model.User;
 import shopeazy.com.ecommerce_app.product.dto.CreateProductRequest;
 import shopeazy.com.ecommerce_app.product.dto.ProductResponseDto;
@@ -35,10 +33,7 @@ public class ProductController {
 
     @GetMapping
     public ResponseEntity<List<ProductResponseDto>> getAllProducts() {
-        List<Product> products = productService.findAll();
-        List<ProductResponseDto> responseDtoList = products.stream()
-                .map(ProductMapper::mapToDto)
-                .toList();
+        List<ProductResponseDto> responseDtoList = productService.getAllProducts();
         return ResponseEntity.ok(responseDtoList);
     }
 

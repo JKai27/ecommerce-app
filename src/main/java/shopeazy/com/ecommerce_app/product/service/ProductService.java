@@ -10,6 +10,8 @@ import java.util.List;
 
 public interface ProductService {
     List<Product> findAll();
+    
+    List<ProductResponseDto> getAllProducts();
 
     ProductResponseDto getProductById(String id);
 

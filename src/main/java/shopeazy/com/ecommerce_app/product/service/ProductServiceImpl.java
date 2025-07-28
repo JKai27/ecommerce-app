@@ -15,6 +15,8 @@ import shopeazy.com.ecommerce_app.product.dto.ProductResponseDto;
 import shopeazy.com.ecommerce_app.product.repository.ProductRepository;
 import shopeazy.com.ecommerce_app.product.dto.UpdateProductRequestDto;
 import shopeazy.com.ecommerce_app.product.validator.ProductValidator;
+import shopeazy.com.ecommerce_app.seller.model.Seller;
+import shopeazy.com.ecommerce_app.seller.repository.SellerProfileRepository;
 
 import java.util.*;
 
@@ -23,17 +25,34 @@ import java.util.*;
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
+    private final SellerProfileRepository sellerProfileRepository;
 
     @Override
     public List<Product> findAll() {
         return productRepository.findAll();
+    }
+    
+    @Override
+    public List<ProductResponseDto> getAllProducts() {
+        List<Product> products = productRepository.findAll();
+        return products.stream()
+                .map(product -> {
+                    Seller seller = sellerProfileRepository.findById(product.getSellerId())
+                            .orElse(null); // Handle cases where seller might not exist
+                    return ProductMapper.mapToDto(product, seller);
+                })
+                .toList();
     }
 
     @Override
     public ProductResponseDto getProductById(String id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product by product Id " + id + " doesn't exist"));
-        return ProductMapper.mapToDto(product);
+        
+        Seller seller = sellerProfileRepository.findById(product.getSellerId())
+                .orElseThrow(() -> new ResourceNotFoundException("Seller not found for product " + id));
+        
+        return ProductMapper.mapToDto(product, seller);
     }
 
     @Override
@@ -53,7 +72,11 @@ public class ProductServiceImpl implements ProductService {
         productToRegister.setStatus(request.getStatus());
         productToRegister.setSellerId(request.getSellerId());
         productRepository.save(productToRegister);
-        return ProductMapper.mapToDto(productToRegister);
+        
+        Seller seller = sellerProfileRepository.findById(request.getSellerId())
+                .orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
+        
+        return ProductMapper.mapToDto(productToRegister, seller);
     }
 
     @Override
@@ -66,7 +89,11 @@ public class ProductServiceImpl implements ProductService {
         applyUpdate(product, request);
 
         Product updatedProduct = productRepository.save(product);
-        return ProductMapper.mapToDto(updatedProduct);
+        
+        Seller seller = sellerProfileRepository.findById(sellerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
+        
+        return ProductMapper.mapToDto(updatedProduct, seller);
     }
 
     @Override
@@ -84,9 +111,11 @@ public class ProductServiceImpl implements ProductService {
                 .toList();
         List<Product> updated = productRepository.saveAll(toUpdate);
 
+        Seller seller = sellerProfileRepository.findById(sellerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
 
         return updated.stream()
-                .map(ProductMapper::mapToDto)
+                .map(product -> ProductMapper.mapToDto(product, seller))
                 .toList();
     }
 
