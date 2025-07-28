@@ -34,7 +34,7 @@ public class CreateProductRequest {
     private List<@NotBlank String> images;
 
     @NotNull(message = "Status is required")
-    private ProductStatus status; // Or ProductStatus if you're validating enums on input
+    private ProductStatus status;
 
     @NotBlank(message = "Seller ID is required")
     private String sellerId;
