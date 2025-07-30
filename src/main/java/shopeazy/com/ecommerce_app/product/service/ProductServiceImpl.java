@@ -2,24 +2,24 @@ package shopeazy.com.ecommerce_app.product.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
-import shopeazy.com.ecommerce_app.product.dto.ProductAvailabilityResponse;
+import shopeazy.com.ecommerce_app.product.dto.*;
+import shopeazy.com.ecommerce_app.product.enums.ProductStatus;
 import shopeazy.com.ecommerce_app.product.exception.DuplicateProductException;
 import shopeazy.com.ecommerce_app.product.exception.ProductOutOfStockException;
 import shopeazy.com.ecommerce_app.security.exception.ForbiddenOperationException;
 import shopeazy.com.ecommerce_app.common.exception.ResourceNotFoundException;
 import shopeazy.com.ecommerce_app.product.mapper.ProductMapper;
 import shopeazy.com.ecommerce_app.product.model.Product;
-import shopeazy.com.ecommerce_app.product.dto.CreateProductRequest;
-import shopeazy.com.ecommerce_app.product.dto.ProductResponseDto;
 import shopeazy.com.ecommerce_app.product.repository.ProductRepository;
-import shopeazy.com.ecommerce_app.product.dto.UpdateProductRequestDto;
 import shopeazy.com.ecommerce_app.product.validator.ProductValidator;
 import shopeazy.com.ecommerce_app.seller.model.Seller;
 import shopeazy.com.ecommerce_app.seller.repository.SellerProfileRepository;
 import shopeazy.com.ecommerce_app.common.UniqueReadableNumberService;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -28,12 +28,13 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final SellerProfileRepository sellerProfileRepository;
     private final UniqueReadableNumberService uniqueReadableNumberService;
+    private final ModelMapper modelMapper;
 
     @Override
     public List<Product> findAll() {
         return productRepository.findAll();
     }
-    
+
     @Override
     public List<ProductResponseDto> getAllProducts() {
         List<Product> products = productRepository.findAll();
@@ -50,10 +51,10 @@ public class ProductServiceImpl implements ProductService {
     public ProductResponseDto getProductById(String id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product by product Id " + id + " doesn't exist"));
-        
+
         Seller seller = sellerProfileRepository.findById(product.getSellerId())
                 .orElseThrow(() -> new ResourceNotFoundException("Seller not found for product " + id));
-        
+
         return ProductMapper.mapToDto(product, seller);
     }
 
@@ -76,10 +77,10 @@ public class ProductServiceImpl implements ProductService {
         productToRegister.setStatus(request.getStatus());
         productToRegister.setSellerId(request.getSellerId());
         productRepository.save(productToRegister);
-        
+
         Seller seller = sellerProfileRepository.findById(request.getSellerId())
                 .orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
-        
+
         return ProductMapper.mapToDto(productToRegister, seller);
     }
 
@@ -93,10 +94,10 @@ public class ProductServiceImpl implements ProductService {
         applyUpdate(product, request);
 
         Product updatedProduct = productRepository.save(product);
-        
+
         Seller seller = sellerProfileRepository.findById(sellerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
-        
+
         return ProductMapper.mapToDto(updatedProduct, seller);
     }
 
@@ -122,6 +123,71 @@ public class ProductServiceImpl implements ProductService {
                 .map(product -> ProductMapper.mapToDto(product, seller))
                 .toList();
     }
+
+    @Override
+    public ProductResponseDto updateProductStatus(UpdateProductStatusRequest request) {
+
+
+        Product product = productRepository.findById(request.getProductId())
+                .orElseThrow(() -> new ResourceNotFoundException("Product with id " + request.getProductId() + " doesn't exist"));
+
+        product.setStatus(request.getStatus());
+        log.info("Updating status of product with id {} to status {}", request.getProductId(), request.getStatus());
+
+        return modelMapper.map(productRepository.save(product), ProductResponseDto.class);
+    }
+
+    @Override
+    public List<ProductResponseDto> bulkUpdateProductStatus(BulkUpdateProductStatusRequest request) {
+        List<Product> products = productRepository.findAllById(request.getProductIds());
+
+        if (products.isEmpty()) {
+            throw new ResourceNotFoundException("No matching products found.");
+        }
+
+        products.forEach(product -> product.setStatus(request.getStatus()));
+        log.info("Updating status for products: {} to status: {}",
+                products.stream().map(Product::getId).toList(),request.getStatus());
+
+        List<Product> saved = productRepository.saveAll(products);
+
+        return saved.stream()
+                .map(product -> modelMapper.map(product, ProductResponseDto.class))
+                .toList();
+    }
+
+    @Override
+    public List<ProductResponseDto> bulkUpdateMultipleProductStatus(BulkUpdateMultipleProductStatusRequest request) {
+        List<String> productIds = request.getUpdates().stream()
+                .map(UpdateProductStatusRequest::getProductId)
+                .toList();
+
+        List<Product> products = productRepository.findAllById(productIds);
+
+        if (products.isEmpty()) {
+            throw new ResourceNotFoundException("No matching products found.");
+        }
+
+        Map<String, ProductStatus> statusMap = request.getUpdates().stream()
+                .collect(Collectors.toMap(UpdateProductStatusRequest::getProductId, UpdateProductStatusRequest::getStatus));
+
+        products.forEach(product -> {
+            ProductStatus newStatus = statusMap.get(product.getId());
+            if (newStatus != null) {
+                product.setStatus(newStatus);
+            }
+        });
+
+        log.info("Updated statuses for products: {}",
+                products.stream().map(Product::getId).toList());
+
+        List<Product> saved = productRepository.saveAll(products);
+
+        return saved.stream()
+                .map(product -> modelMapper.map(product, ProductResponseDto.class))
+                .toList();
+    }
+
 
     @Override
     public void deleteProductById(String productId) {

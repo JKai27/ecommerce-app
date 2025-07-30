@@ -9,14 +9,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import shopeazy.com.ecommerce_app.common.exception.ResourceNotFoundException;
-import shopeazy.com.ecommerce_app.product.dto.ProductAvailabilityResponse;
+import shopeazy.com.ecommerce_app.product.dto.*;
 import shopeazy.com.ecommerce_app.user.model.User;
-import shopeazy.com.ecommerce_app.product.dto.CreateProductRequest;
-import shopeazy.com.ecommerce_app.product.dto.ProductResponseDto;
 import shopeazy.com.ecommerce_app.product.repository.ProductRepository;
 import shopeazy.com.ecommerce_app.user.repository.UserRepository;
 import shopeazy.com.ecommerce_app.product.service.ProductService;
-import shopeazy.com.ecommerce_app.product.dto.UpdateProductRequestDto;
 
 import java.security.Principal;
 import java.util.List;
@@ -70,6 +67,27 @@ public class ProductController {
         return ResponseEntity.ok(productResponseDto);
     }
 
+    @PatchMapping("/status")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<ProductResponseDto> updateProductStatus(
+            @Valid @RequestBody UpdateProductStatusRequest request) {
+        ProductResponseDto responseDto = productService.updateProductStatus(request);
+        return ResponseEntity.ok(responseDto);
+    }
+
+    @PatchMapping("/status/bulk")
+    public ResponseEntity<List<ProductResponseDto>> bulkUpdateProductStatus(
+            @Valid @RequestBody BulkUpdateProductStatusRequest request) {
+        List<ProductResponseDto> updatedProducts = productService.bulkUpdateProductStatus(request);
+        return ResponseEntity.ok(updatedProducts);
+    }
+
+    @PatchMapping("/multi-status/bulk")
+    public List<ProductResponseDto> bulkUpdateMultipleProductStatus(
+            @Valid @RequestBody BulkUpdateMultipleProductStatusRequest request) {
+        return productService.bulkUpdateMultipleProductStatus(request);
+    }
+
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_SELLER')")
     @DeleteMapping("{productId}")
     public ResponseEntity<String> deleteProductById(@PathVariable String productId) {
@@ -80,7 +98,8 @@ public class ProductController {
     /* Bulk Endpoints   */
     @PatchMapping("/bulk-update")
     @PreAuthorize("hasAuthority('ROLE_SELLER')")
-    public ResponseEntity<List<ProductResponseDto>> updateOwnProductsInBulk(@Valid @RequestBody List<UpdateProductRequestDto> requestDtoList, Principal principal) {
+    public ResponseEntity<List<ProductResponseDto>> updateOwnProductsInBulk(
+            @Valid @RequestBody List<UpdateProductRequestDto> requestDtoList, Principal principal) {
         String sellerEmail = principal.getName();
         User seller = userRepository.findByEmail(sellerEmail).orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
         List<ProductResponseDto> productResponseDtos = productService.updateOwnProductsInBulk(seller.getId(), requestDtoList);

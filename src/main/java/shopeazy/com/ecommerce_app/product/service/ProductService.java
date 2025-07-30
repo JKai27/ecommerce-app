@@ -1,10 +1,8 @@
 package shopeazy.com.ecommerce_app.product.service;
 
-import shopeazy.com.ecommerce_app.product.dto.ProductAvailabilityResponse;
+import jakarta.validation.Valid;
+import shopeazy.com.ecommerce_app.product.dto.*;
 import shopeazy.com.ecommerce_app.product.model.Product;
-import shopeazy.com.ecommerce_app.product.dto.CreateProductRequest;
-import shopeazy.com.ecommerce_app.product.dto.ProductResponseDto;
-import shopeazy.com.ecommerce_app.product.dto.UpdateProductRequestDto;
 
 import java.util.List;
 
@@ -19,6 +17,10 @@ public interface ProductService {
 
     ProductResponseDto updateOwnProduct(String sellerId, UpdateProductRequestDto request);
 
+    ProductResponseDto updateProductStatus(UpdateProductStatusRequest request);
+
+    List<ProductResponseDto> bulkUpdateMultipleProductStatus(BulkUpdateMultipleProductStatusRequest request);
+
     void deleteProductById(String productId);
 
     List<ProductResponseDto> updateOwnProductsInBulk(String sellerId, List<UpdateProductRequestDto> requestList);
@@ -29,4 +31,6 @@ public interface ProductService {
 
     void validateRequestedQuantity(String productId, int requestedQty);
     void restoreStock(String productId, int quantityToRestore);
+
+    List<ProductResponseDto> bulkUpdateProductStatus(@Valid BulkUpdateProductStatusRequest request);
 }
