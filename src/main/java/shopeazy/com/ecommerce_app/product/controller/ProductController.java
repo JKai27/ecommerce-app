@@ -75,6 +75,7 @@ public class ProductController {
         return ResponseEntity.ok(responseDto);
     }
 
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PatchMapping("/status/bulk")
     public ResponseEntity<List<ProductResponseDto>> bulkUpdateProductStatus(
             @Valid @RequestBody BulkUpdateProductStatusRequest request) {
@@ -82,6 +83,7 @@ public class ProductController {
         return ResponseEntity.ok(updatedProducts);
     }
 
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PatchMapping("/multi-status/bulk")
     public List<ProductResponseDto> bulkUpdateMultipleProductStatus(
             @Valid @RequestBody BulkUpdateMultipleProductStatusRequest request) {
