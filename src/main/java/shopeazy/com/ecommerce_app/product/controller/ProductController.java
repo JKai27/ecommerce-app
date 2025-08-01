@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 import shopeazy.com.ecommerce_app.common.exception.ResourceNotFoundException;
 import shopeazy.com.ecommerce_app.product.dto.*;
 import shopeazy.com.ecommerce_app.user.model.User;
-import shopeazy.com.ecommerce_app.product.repository.ProductRepository;
 import shopeazy.com.ecommerce_app.user.repository.UserRepository;
 import shopeazy.com.ecommerce_app.product.service.ProductService;
 
@@ -26,7 +25,6 @@ import java.util.List;
 public class ProductController {
     private final ProductService productService;
     private final UserRepository userRepository;
-    private final ProductRepository productRepository;
 
     @GetMapping
     public ResponseEntity<List<ProductResponseDto>> getAllProducts() {

@@ -11,7 +11,6 @@ import shopeazy.com.ecommerce_app.user.model.User;
 import shopeazy.com.ecommerce_app.security.repository.PermissionRepository;
 import shopeazy.com.ecommerce_app.security.repository.RoleRepository;
 import shopeazy.com.ecommerce_app.user.repository.UserRepository;
-import shopeazy.com.ecommerce_app.security.service.RoleAssignmentService;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -70,7 +70,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private Role getRoleByName() throws RoleNotFoundException {
-        return roleRepository.findByName("USER")
+        return roleRepository.findByName("ROLE_USER")
                 .orElseThrow(() -> new RoleNotFoundException("Role not found: " + "USER"));
     }
 

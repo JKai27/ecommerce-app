@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -18,7 +17,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import shopeazy.com.ecommerce_app.common.exception.AppException;
 import shopeazy.com.ecommerce_app.user.model.User;
-import shopeazy.com.ecommerce_app.auth.dto.JwtResponse;
 import shopeazy.com.ecommerce_app.auth.dto.LoginRequest;
 import shopeazy.com.ecommerce_app.auth.dto.LoginResponse;
 import shopeazy.com.ecommerce_app.user.repository.UserRepository;
@@ -43,7 +41,7 @@ public class AuthService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final CookieUtil cookieUtil;
 
-    public ResponseEntity<?> login(LoginRequest loginRequest, HttpServletResponse response) {
+    public LoginResponse login(LoginRequest loginRequest, HttpServletResponse response) {
         // Step 1: Validate User Credentials
         User user = userRepository.findByEmail(loginRequest.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("User with email " + loginRequest.getEmail() + " not found"));
@@ -68,11 +66,19 @@ public class AuthService {
         // Step 5: Set JWT tokens in cookies
         setJwtCookie(response, accessToken, refreshToken);
 
-        // Step 6: Set JWT tokens in cookies
-        return ResponseEntity.ok(new JwtResponse(accessToken, refreshToken));
+        // Step 6: Return LoginResponse
+        return new LoginResponse(
+                user.getId(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getGender(),
+                user.getEmail(),
+                true,
+                user.getRoles()
+        );
     }
 
-    public ResponseEntity<LoginResponse> refresh(String refreshToken) {
+    public LoginResponse refresh(String refreshToken, HttpHeaders responseHeaders) {
         boolean refreshTokenValid = jwtService.validateToken(refreshToken);
 
         if (!refreshTokenValid)
@@ -88,10 +94,9 @@ public class AuthService {
                 jwtExpirationMs
         );
 
-        HttpHeaders responseHeaders = new HttpHeaders();
         addAccessTokenCookie(responseHeaders, newAccessToken);
 
-        LoginResponse loginResponse = new LoginResponse(
+        return new LoginResponse(
                 user.getId(),
                 user.getFirstName(),
                 user.getLastName(),
@@ -99,10 +104,7 @@ public class AuthService {
                 user.getEmail(),
                 true,
                 user.getRoles()
-                );
-
-
-        return ResponseEntity.ok().headers(responseHeaders).body(loginResponse);
+        );
     }
 
     private void setJwtCookie(HttpServletResponse response, String accessToken, String refreshToken) {
