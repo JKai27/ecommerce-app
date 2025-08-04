@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import shopeazy.com.ecommerce_app.auth.dto.LoginRequest;
 import shopeazy.com.ecommerce_app.auth.dto.LoginResponse;
 import shopeazy.com.ecommerce_app.auth.service.AuthService;
+import shopeazy.com.ecommerce_app.user.dto.UserDTO;
 
 @Slf4j
 @RestController
@@ -18,35 +19,34 @@ import shopeazy.com.ecommerce_app.auth.service.AuthService;
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;
-
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
+    public ResponseEntity<UserDTO> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
         try {
-            LoginResponse loginResponse = authService.login(loginRequest, response);
-            return ResponseEntity.ok(loginResponse);
+            UserDTO userDTO = authService.login(loginRequest, response);
+            return ResponseEntity.ok(userDTO);
         } catch (IllegalArgumentException e) {
             log.error("Login failed: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new LoginResponse(null, null, null, null, null, false, null));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // Kein Body mehr nötig
         } catch (Exception e) {
             log.error("Unexpected error during login", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new LoginResponse(null, null, null, null, null, false, null));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    @PostMapping("/refresh")
+    public ResponseEntity<UserDTO> refreshToken(
+            @CookieValue(name = "refresh_token", required = true) String refreshToken) {
+        try {
+            HttpHeaders responseHeaders = new HttpHeaders();
+            UserDTO userDTO = authService.refresh(refreshToken, responseHeaders);
+            return ResponseEntity.ok()
+                    .headers(responseHeaders)
+                    .body(userDTO);
+        } catch (Exception e) {
+            log.error("Token refresh failed", e);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
 
-    @PostMapping("/refresh")
-    public ResponseEntity<LoginResponse> refreshToken(@CookieValue(name = "refresh_token", required = true) String refreshToken) {
-        try {
-            HttpHeaders responseHeaders = new HttpHeaders();
-            LoginResponse loginResponse = authService.refresh(refreshToken, responseHeaders);
-            return ResponseEntity.ok().headers(responseHeaders).body(loginResponse);
-        } catch (Exception e) {
-            log.error("Token refresh failed", e);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new LoginResponse(null, null, null, null, null, false, null));
-        }
-    }
 
     @DeleteMapping("/logout")
     public ResponseEntity<String> logout(
