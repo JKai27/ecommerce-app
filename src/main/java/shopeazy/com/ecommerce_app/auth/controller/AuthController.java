@@ -9,9 +9,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import shopeazy.com.ecommerce_app.auth.dto.LoginRequest;
-import shopeazy.com.ecommerce_app.auth.dto.LoginResponse;
 import shopeazy.com.ecommerce_app.auth.service.AuthService;
 import shopeazy.com.ecommerce_app.user.dto.UserDTO;
+import shopeazy.com.ecommerce_app.common.dto.ApiResponse;
+
+import java.time.Instant;
 
 @Slf4j
 @RestController
@@ -20,57 +22,71 @@ import shopeazy.com.ecommerce_app.user.dto.UserDTO;
 public class AuthController {
     private final AuthService authService;
     @PostMapping("/login")
-    public ResponseEntity<UserDTO> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
+    public ResponseEntity<ApiResponse<UserDTO>> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
         try {
             UserDTO userDTO = authService.login(loginRequest, response);
-            return ResponseEntity.ok(userDTO);
+            return ResponseEntity.ok(
+                    new ApiResponse<>(true, "Login successful", userDTO, Instant.now())
+            );
         } catch (IllegalArgumentException e) {
             log.error("Login failed: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // Kein Body mehr nötig
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    new ApiResponse<>(false, e.getMessage(), null, Instant.now())
+            );
         } catch (Exception e) {
             log.error("Unexpected error during login", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    new ApiResponse<>(false, "Internal server error during login", null, Instant.now())
+            );
         }
     }
     @PostMapping("/refresh")
-    public ResponseEntity<UserDTO> refreshToken(
+    public ResponseEntity<ApiResponse<UserDTO>> refreshToken(
             @CookieValue(name = "refresh_token", required = true) String refreshToken) {
         try {
             HttpHeaders responseHeaders = new HttpHeaders();
             UserDTO userDTO = authService.refresh(refreshToken, responseHeaders);
             return ResponseEntity.ok()
                     .headers(responseHeaders)
-                    .body(userDTO);
+                    .body(new ApiResponse<>(true, "Token refreshed successfully", userDTO, Instant.now()));
         } catch (Exception e) {
             log.error("Token refresh failed", e);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    new ApiResponse<>(false, "Token refresh failed", null, Instant.now())
+            );
         }
     }
 
 
     @DeleteMapping("/logout")
-    public ResponseEntity<String> logout(
+    public ResponseEntity<ApiResponse<String>> logout(
             @CookieValue(name = "access_token", required = false) String accessToken,
             @CookieValue(name = "refresh_token", required = false) String refreshToken,
             HttpServletResponse response, HttpServletRequest request) {
         try {
             // Ensure that the access and refresh tokens are provided
             if (accessToken == null || refreshToken == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                        new ApiResponse<>(false, "User not logged in", null, Instant.now())
+                );
             }
 
             String username = authService.logout(accessToken, refreshToken, response, request);
 
             if (username != null && !username.startsWith("Logging out for user")) {
-                return ResponseEntity.ok("The user with email -- " + username + " -- logged out successfully");
+                return ResponseEntity.ok(
+                        new ApiResponse<>(true, "The user with email -- " + username + " -- logged out successfully", username, Instant.now())
+                );
             } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(username);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                        new ApiResponse<>(false, username, null, Instant.now())
+                );
             }
 
         } catch (Exception e) {
             log.error("Error while logging out", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error during logout: " + e.getMessage());
+                    .body(new ApiResponse<>(false, "Error during logout: " + e.getMessage(), null, Instant.now()));
         }
     }
 }

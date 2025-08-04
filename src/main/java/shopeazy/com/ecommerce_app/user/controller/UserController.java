@@ -22,9 +22,7 @@ import shopeazy.com.ecommerce_app.user.service.UserService;
 
 import javax.management.relation.RoleNotFoundException;
 import java.time.Instant;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RestController
@@ -41,11 +39,11 @@ public class UserController {
      */
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @GetMapping
-    public ResponseEntity<Map<String,Object>> getAll() {
-        Map<String, Object> response = new HashMap<>();
+    public ResponseEntity<ApiResponse<List<UserDTO>>> getAll() {
         List<UserDTO> users = userService.getAll();
-        response.put("users", users);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, "Users retrieved successfully", users, Instant.now())
+        );
     }
 
     /*
@@ -53,12 +51,16 @@ public class UserController {
      */
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @GetMapping("/{userId}")
-    public ResponseEntity<UserDTO> getUserById(@PathVariable String userId) {
+    public ResponseEntity<ApiResponse<UserDTO>> getUserById(@PathVariable String userId) {
         User user = userService.getUserById(userId);
         if (user == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    new ApiResponse<>(false, "User not found", null, Instant.now())
+            );
         }
-        return ResponseEntity.ok(UserMapper.mapToDTO(user, roleRepository));
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, "User retrieved successfully", UserMapper.mapToDTO(user, roleRepository), Instant.now())
+        );
     }
 
     /*
@@ -77,15 +79,14 @@ public class UserController {
      */
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PatchMapping("/{userId}/status")
-    public ResponseEntity<Map<String, Object>> updateStatus(@PathVariable String userId,
+    public ResponseEntity<ApiResponse<UserDTO>> updateStatus(@PathVariable String userId,
                                                             @RequestBody StatusUpdateRequest request)
             throws InvalidStatusException {
         String status = request.getStatus().toUpperCase();
         UserDTO updatedUser = userService.updateStatus(userId, status);
-        Map<String, Object> response = new HashMap<>();
-        response.put("message", "User status updated successfully to " + status);
-        response.put("updatedUser", updatedUser);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, "User status updated successfully to " + status, updatedUser, Instant.now())
+        );
     }
 
     /*
@@ -93,15 +94,12 @@ public class UserController {
      */
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @DeleteMapping("/{userId}/delete")
-    public ResponseEntity<Map<String,Object>> deleteUserById(@PathVariable String userId) {
-        Map<String, Object> response = new HashMap<>();
+    public ResponseEntity<ApiResponse<String>> deleteUserById(@PathVariable String userId) {
         String email = userService.getUserById(userId).getEmail();
-
         userService.deleteById(userId);
-        response.put("deleted users email", email);
-        response.put("message", "User with the userId (" + userId + ") deleted successfully");
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, "User with the userId (" + userId + ") deleted successfully", email, Instant.now())
+        );
     }
 
 
@@ -115,12 +113,12 @@ public class UserController {
   */
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PatchMapping("/bulkStatus-update/{status}")
-    public ResponseEntity<Map<String,Object>> updateStatusInBulk(@Valid @RequestBody UserUpdateInBulkRequest request,
+    public ResponseEntity<ApiResponse<List<UserDTO>>> updateStatusInBulk(@Valid @RequestBody UserUpdateInBulkRequest request,
                                                 @PathVariable String status) throws InvalidStatusException {
-        Map<String, Object> response = new HashMap<>();
         List<UserDTO> userDTOList = userService.updateStatusInBulk(request, status);
-        response.put("updated-users", userDTOList);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, "User statuses updated successfully", userDTOList, Instant.now())
+        );
     }
 
 
@@ -130,12 +128,16 @@ public class UserController {
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @DeleteMapping("/bulk-delete")
-    public ResponseEntity<?> deleteUsersInBulk(@Valid @RequestBody UserUpdateInBulkRequest request) {
+    public ResponseEntity<ApiResponse<String>> deleteUsersInBulk(@Valid @RequestBody UserUpdateInBulkRequest request) {
         try {
             userService.deleteUsersInBulk(request);
-            return ResponseEntity.noContent().build();
+            return ResponseEntity.ok(
+                    new ApiResponse<>(true, "Users deleted successfully", null, Instant.now())
+            );
         } catch (UserNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Some users not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    new ApiResponse<>(false, "Some users not found", null, Instant.now())
+            );
         }
     }
 
@@ -145,11 +147,11 @@ public class UserController {
      */
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @DeleteMapping("/deleteAll")
-    public ResponseEntity<Map<String,Object>> deleteAllUsers() {
-        Map<String, Object> response = new HashMap<>();
+    public ResponseEntity<ApiResponse<String>> deleteAllUsers() {
         String responseString = userService.deleteAllUsersExceptAdmins();
-        response.put("message", responseString);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, responseString, null, Instant.now())
+        );
     }
 }
 

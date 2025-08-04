@@ -20,9 +20,7 @@ import shopeazy.com.ecommerce_app.user.service.UserService;
 
 import java.security.Principal;
 import java.time.Instant;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RestController
@@ -34,18 +32,20 @@ public class SellerController {
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @GetMapping
-    public ResponseEntity<List<SellerProfileResponse>> getAll() {
+    public ResponseEntity<ApiResponse<List<SellerProfileResponse>>> getAll() {
         List<SellerProfileResponse> sellerProfiles = sellerProfileService.getAll();
-        return ResponseEntity.ok(sellerProfiles);
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, "Sellers retrieved successfully", sellerProfiles, Instant.now())
+        );
     }
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @GetMapping("/{sellerId}")
-    public ResponseEntity<Map<String, Object>> getById(@PathVariable("sellerId") String sellerId) {
-        Map<String, Object> response = new HashMap<>();
+    public ResponseEntity<ApiResponse<SellerProfileResponse>> getById(@PathVariable("sellerId") String sellerId) {
         SellerProfileResponse sellerProfile = sellerProfileService.getById(sellerId);
-        response.put("sellerProfile", sellerProfile);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, "Seller retrieved successfully", sellerProfile, Instant.now())
+        );
     }
 
     @PostMapping("/apply")
@@ -75,11 +75,13 @@ public class SellerController {
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PutMapping("/approve")
-    public ResponseEntity<String> approveSeller(@RequestBody SellerApprovalRequest request) {
+    public ResponseEntity<ApiResponse<String>> approveSeller(@RequestBody SellerApprovalRequest request) {
         sellerProfileService.approveSeller(request);
         log.info("Seller approved for the seller role: {}", request.getUserEmail());
 
-        return ResponseEntity.ok("You have successfully approved the seller role");
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, "You have successfully approved the seller role", null, Instant.now())
+        );
     }
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
