@@ -21,7 +21,6 @@ import shopeazy.com.ecommerce_app.user.dto.UserDTO;
 import shopeazy.com.ecommerce_app.user.mapper.UserMapper;
 import shopeazy.com.ecommerce_app.user.model.User;
 import shopeazy.com.ecommerce_app.auth.dto.LoginRequest;
-import shopeazy.com.ecommerce_app.auth.dto.LoginResponse;
 import shopeazy.com.ecommerce_app.user.repository.UserRepository;
 import shopeazy.com.ecommerce_app.security.jwt.JwtService;
 import org.slf4j.Logger;
@@ -71,7 +70,7 @@ public class AuthService {
         // Step 5: Set JWT tokens in cookies
         setJwtCookie(response, accessToken, refreshToken);
 
-        // Step 6: Return LoginResponse
+        // Step 6: Response - UserDTO
         return UserMapper.mapToDTO(user, roleRepository);
     }
 
