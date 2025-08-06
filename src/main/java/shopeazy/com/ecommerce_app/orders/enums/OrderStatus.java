@@ -1,4 +1,4 @@
-package shopeazy.com.ecommerce_app.order.enums;
+package shopeazy.com.ecommerce_app.orders.enums;
 
 /**
  * Represents the current status of an order in the fulfillment lifecycle.

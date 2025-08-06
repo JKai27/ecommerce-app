@@ -1,4 +1,4 @@
-package shopeazy.com.ecommerce_app.order.model;
+package shopeazy.com.ecommerce_app.orders.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,8 +9,8 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import shopeazy.com.ecommerce_app.common.model.Address;
-import shopeazy.com.ecommerce_app.order.enums.OrderStatus;
-import shopeazy.com.ecommerce_app.order.enums.PaymentStatus;
+import shopeazy.com.ecommerce_app.orders.enums.OrderStatus;
+import shopeazy.com.ecommerce_app.orders.enums.PaymentStatus;
 
 import java.time.Instant;
 import java.util.List;
