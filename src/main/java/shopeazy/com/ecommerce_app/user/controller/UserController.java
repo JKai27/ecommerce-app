@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import shopeazy.com.ecommerce_app.product.exception.InvalidStatusException;
+import shopeazy.com.ecommerce_app.user.dto.UpdateUserProfileRequest;
 import shopeazy.com.ecommerce_app.user.exception.UserNotFoundException;
 import shopeazy.com.ecommerce_app.user.mapper.UserMapper;
 import shopeazy.com.ecommerce_app.user.model.User;
@@ -21,6 +22,7 @@ import shopeazy.com.ecommerce_app.security.repository.RoleRepository;
 import shopeazy.com.ecommerce_app.user.service.UserService;
 
 import javax.management.relation.RoleNotFoundException;
+import java.security.Principal;
 import java.time.Instant;
 import java.util.List;
 
@@ -63,6 +65,28 @@ public class UserController {
         );
     }
 
+    @PreAuthorize("hasAuthority('ROLE_USER')")
+    @GetMapping("/me/profile")
+    public ResponseEntity<ApiResponse<UserDTO>> getOwnProfile(Principal principal) {
+        User user = userService.getUserByPrincipal(principal);
+        User currentUser = userService.getUserById(user.getId());
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, "Your Profile", UserMapper.mapToDTO(currentUser, roleRepository), Instant.now())
+
+        );
+    }
+
+
+    @PreAuthorize("hasAuthority('ROLE_USER')")
+    @PatchMapping("/me/profile")
+    public ResponseEntity<ApiResponse<UserDTO>> updateOwnProfile(@Valid @RequestBody UpdateUserProfileRequest request, Principal principal) {
+        User user = userService.getUserByPrincipal(principal);
+        UserDTO updatedUserProfile = userService.updateOwnProfile(request, user.getId());
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, "You have successfully updated your profile.", updatedUserProfile, Instant.now())
+        );
+    }
+
     /*
         Create a User with Redis generated User-Id. While in the DB, the ID has MongoDB-ID
      */
@@ -80,7 +104,7 @@ public class UserController {
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PatchMapping("/{userId}/status")
     public ResponseEntity<ApiResponse<UserDTO>> updateStatus(@PathVariable String userId,
-                                                            @RequestBody StatusUpdateRequest request)
+                                                             @RequestBody StatusUpdateRequest request)
             throws InvalidStatusException {
         String status = request.getStatus().toUpperCase();
         UserDTO updatedUser = userService.updateStatus(userId, status);
@@ -114,7 +138,7 @@ public class UserController {
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PatchMapping("/bulkStatus-update/{status}")
     public ResponseEntity<ApiResponse<List<UserDTO>>> updateStatusInBulk(@Valid @RequestBody UserUpdateInBulkRequest request,
-                                                @PathVariable String status) throws InvalidStatusException {
+                                                                         @PathVariable String status) throws InvalidStatusException {
         List<UserDTO> userDTOList = userService.updateStatusInBulk(request, status);
         return ResponseEntity.ok(
                 new ApiResponse<>(true, "User statuses updated successfully", userDTOList, Instant.now())

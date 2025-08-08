@@ -13,4 +13,6 @@ public interface SellerProfileRepository extends MongoRepository<Seller, String>
 
     List<Seller> findByCompanyName(String companyName);
 
+    Optional<Seller> findByUserId(String id);
+
 }

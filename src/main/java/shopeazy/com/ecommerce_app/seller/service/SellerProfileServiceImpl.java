@@ -3,6 +3,7 @@ package shopeazy.com.ecommerce_app.seller.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import shopeazy.com.ecommerce_app.common.UniqueReadableNumberService;
 import shopeazy.com.ecommerce_app.security.enums.RoleType;
 import shopeazy.com.ecommerce_app.seller.enums.SellerStatus;
@@ -26,6 +27,7 @@ import shopeazy.com.ecommerce_app.security.service.PermissionResolverService;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Slf4j
@@ -78,6 +80,8 @@ public class SellerProfileServiceImpl implements SellerProfileService {
         return SellerProfileResponseMapper.toResponse(seller, user);
     }
 
+
+
     /*
         A user can apply for become a seller through this endpoint.
      */
@@ -127,13 +131,14 @@ public class SellerProfileServiceImpl implements SellerProfileService {
         Admin approves the request from the user to become a seller
      */
     @Override
-    public void approveSeller(SellerApprovalRequest request) {
+    public SellerProfileResponse approveSeller(SellerApprovalRequest request) {
         Seller seller = sellerProfileRepository.findByContactEmail(request.getContactEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("Seller not found with email: " + request.getContactEmail()));
         seller.setSellerStatus(SellerStatus.ACTIVE);
         sellerProfileRepository.save(seller);
         User user = addSellerRoleAndPermissionsToTheApprovedUserForTheSellerProfile(request);
         userRepository.save(user);
+        return SellerProfileResponseMapper.toResponse(seller, user);
     }
 
     private User addSellerRoleAndPermissionsToTheApprovedUserForTheSellerProfile(SellerApprovalRequest request) {
@@ -169,14 +174,95 @@ public class SellerProfileServiceImpl implements SellerProfileService {
     }
 
     /*
-        Delete a seller by its ID
+        Delete a seller by its ID and remove ROLE_SELLER from associated user
      */
 
     @Override
+    @Transactional
     public void deleteSeller(String sellerId) {
         Seller seller = sellerProfileRepository.findById(sellerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
+
+        // Find the associated user and remove ROLE_SELLER
+        User user = userRepository.findById(seller.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("Associated user not found"));
+
+        // Remove ROLE_SELLER from the user
+        roleAssignmentService.removeRoleFromUser(user, RoleType.ROLE_SELLER.name());
+
+        // Delete the seller profile
         sellerProfileRepository.delete(seller);
+
+        log.info("Deleted seller {} and removed ROLE_SELLER from user {}",
+                seller.getSellerId(), user.getEmail());
+    }
+
+    // In SellerProfileService
+    @Override
+    public SellerProfileResponse getByUserId(String userId) {
+        Seller seller = sellerProfileRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Seller profile not found for user ID: " + userId));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
+
+        return SellerProfileResponseMapper.toResponse(seller, user);
+    }
+
+    @Override
+    public SellerProfileResponse updateOwnProfile(SellerProfileRequest request, String userEmail) {
+        log.info("Received request to update own profile for user email: {}", userEmail);
+
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userEmail));
+
+        Seller seller = sellerProfileRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Seller profile not found for user: " + userEmail));
+
+        // Validate company name uniqueness (only if it's being changed)
+        if (!seller.getCompanyName().equals(request.getCompanyName())) {
+            validateCompanyNameUniqueness(request.getCompanyName(), seller.getSellerId());
+        }
+
+        // Validate contact email uniqueness (only if it's being changed)
+        if (!seller.getContactEmail().equals(request.getContactEmail())) {
+            validateContactEmailUniqueness(request.getContactEmail(), seller.getSellerId());
+        }
+        log.info("Seller with userId: {} updating companyName to {} and contactEmail to {}",
+                user.getId(), request.getCompanyName(), request.getContactEmail());
+
+        seller.setCompanyName(request.getCompanyName());
+        seller.setContactEmail(request.getContactEmail());
+
+        log.info("Updated seller companyName to {} and contactEmail to {}",
+                request.getCompanyName(), request.getContactEmail());
+
+        sellerProfileRepository.save(seller);
+        return SellerProfileResponseMapper.toResponse(seller, user);
+    }
+
+    /**
+     *
+     * @param companyName logged in Sellers company name.
+     * @param currentSellerId is the ID of logged in Seller
+     */
+    private void validateCompanyNameUniqueness(String companyName, String currentSellerId) {
+        List<Seller> existingSellers = sellerProfileRepository.findByCompanyName(companyName);
+
+        boolean isCompanyNameTaken = existingSellers.stream()
+                .anyMatch(seller -> !seller.getSellerId().equals(currentSellerId));
+
+        if (isCompanyNameTaken) {
+            throw new SellerAlreadyExistsException("Company name '" + companyName + "' is already taken by another seller");
+        }
+    }
+
+    private void validateContactEmailUniqueness(String contactEmail, String currentSellerId) {
+        Optional<Seller> existingSeller = sellerProfileRepository.findByContactEmail(contactEmail);
+
+        if (existingSeller.isPresent() && !existingSeller.get().getSellerId().equals(currentSellerId)) {
+            throw new SellerAlreadyExistsException("Contact email '" + contactEmail + "' is already taken by another seller");
+        }
     }
 
     /*
@@ -223,6 +309,7 @@ public class SellerProfileServiceImpl implements SellerProfileService {
     }
 
     @Override
+    @Transactional
     public void bulkDelete(List<String> ids) {
         List<Seller> sellers = sellerProfileRepository.findAllById(ids);
 
@@ -230,14 +317,36 @@ public class SellerProfileServiceImpl implements SellerProfileService {
             throw new ResourceNotFoundException("Some seller IDs were not found.");
         }
 
+        // Remove ROLE_SELLER from all associated users
+        for (Seller seller : sellers) {
+            User user = userRepository.findById(seller.getUserId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Associated user not found for seller: " + seller.getSellerId()));
+
+            roleAssignmentService.removeRoleFromUser(user, RoleType.ROLE_SELLER.name());
+        }
+
         sellerProfileRepository.deleteAll(sellers);
+        log.info("Bulk deleted {} sellers and removed ROLE_SELLER from their users", sellers.size());
     }
 
 
     @Override
+    @Transactional
     public void deleteAllSellers() {
+        // Get all sellers first
+        List<Seller> allSellers = sellerProfileRepository.findAll();
+
+        // Remove ROLE_SELLER from all associated users
+        for (Seller seller : allSellers) {
+            User user = userRepository.findById(seller.getUserId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Associated user not found for seller: " + seller.getSellerId()));
+
+            roleAssignmentService.removeRoleFromUser(user, RoleType.ROLE_SELLER.name());
+        }
+
         sellerProfileRepository.deleteAll();
         uniqueReadableNumberService.resetSequence("sellerNumber");
+        log.info("Deleted all {} sellers and removed ROLE_SELLER from their users", allSellers.size());
     }
 
 

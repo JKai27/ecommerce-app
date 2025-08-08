@@ -9,11 +9,13 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import shopeazy.com.ecommerce_app.common.dto.ApiResponse;
 import shopeazy.com.ecommerce_app.product.exception.ProductOutOfStockException;
 import shopeazy.com.ecommerce_app.security.exception.InvalidEmailException;
 import shopeazy.com.ecommerce_app.seller.exception.SellerAccountForTheCompanyNameAlreadyExistsException;
 import shopeazy.com.ecommerce_app.security.exception.ForbiddenOperationException;
 import shopeazy.com.ecommerce_app.product.exception.DuplicateProductException;
+import shopeazy.com.ecommerce_app.seller.exception.SellerAlreadyExistsException;
 import shopeazy.com.ecommerce_app.shopping_cart.exception.ProductNotInCartException;
 
 import java.time.Instant;
@@ -46,6 +48,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler
     public ResponseEntity<String> handleProductNotInCartException(ProductNotInCartException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+    @ExceptionHandler(SellerAlreadyExistsException.class)
+    public ResponseEntity<ApiResponse<Object>> handleSellerAlreadyExistsException(SellerAlreadyExistsException ex) {
+        ApiResponse<Object> response = new ApiResponse<>(
+                false,
+                ex.getMessage(),
+                null,
+                Instant.now()
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
     }
 
 

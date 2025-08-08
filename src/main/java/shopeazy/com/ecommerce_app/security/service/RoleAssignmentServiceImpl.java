@@ -42,6 +42,16 @@ public class RoleAssignmentServiceImpl implements RoleAssignmentService {
         return role;
     }
 
+    @Override
+    public void removeRoleFromUser(User user, String roleName) {
+        List<String> userRoles = user.getRoles();
+        if (userRoles != null && userRoles.contains(roleName)) {
+            userRoles.remove(roleName);
+            user.setRoles(userRoles);
+            userRepository.save(user);
+            log.info("Removed role {} from user {}", roleName, user.getEmail());
+        }
+    }
 
     @Override
     public Role createRoleWithPermissions(String roleName, List<Permission> permissionSet) {

@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import shopeazy.com.ecommerce_app.seller.exception.SellerAlreadyExistsException;
 import shopeazy.com.ecommerce_app.user.model.User;
@@ -48,8 +49,21 @@ public class SellerController {
         );
     }
 
+
+    @PreAuthorize("hasAuthority('ROLE_SELLER')")
+    @GetMapping("/me/profile")
+    public ResponseEntity<ApiResponse<SellerProfileResponse>> getOwnProfile(Principal principal) {
+        log.info("=== INSIDE getOwnProfile METHOD ===");
+        User user = userService.getUserByPrincipal(principal);
+        SellerProfileResponse sellerProfileResponse = sellerProfileService.getByUserId(user.getId());
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, "Your profile", sellerProfileResponse, Instant.now())
+        );
+    }
+
     @PostMapping("/apply")
-    public ResponseEntity<ApiResponse<SellerProfileResponse>> applyForSeller(@RequestBody SellerProfileRequest request, Principal principal) {
+    public ResponseEntity<ApiResponse<SellerProfileResponse>> applyForSeller(@Valid @RequestBody SellerProfileRequest request, Principal principal) {
         try {
             User user = userService.getUserByPrincipal(principal);
             SellerProfileResponse profile = sellerProfileService.applyForSeller(user, request);
@@ -74,13 +88,13 @@ public class SellerController {
     }
 
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    @PutMapping("/approve")
-    public ResponseEntity<ApiResponse<String>> approveSeller(@RequestBody SellerApprovalRequest request) {
-        sellerProfileService.approveSeller(request);
+    @PatchMapping("/approve")
+    public ResponseEntity<ApiResponse<SellerProfileResponse>> approveSeller(@RequestBody SellerApprovalRequest request) {
+        SellerProfileResponse sellerProfileResponse = sellerProfileService.approveSeller(request);
         log.info("Seller approved for the seller role: {}", request.getUserEmail());
 
         return ResponseEntity.ok(
-                new ApiResponse<>(true, "You have successfully approved the seller role", null, Instant.now())
+                new ApiResponse<>(true, "You have successfully approved the seller role", sellerProfileResponse, Instant.now())
         );
     }
 
@@ -104,6 +118,15 @@ public class SellerController {
         log.info("Status of seller {} updated", id);
         return ResponseEntity.ok(
                 new ApiResponse<>(true, "Status of seller updated", response, Instant.now())
+        );
+    }
+
+    @PreAuthorize("hasAuthority('ROLE_SELLER')")
+    @PatchMapping("/me/profile")
+    public ResponseEntity<ApiResponse<SellerProfileResponse>> updateOwnProfile(@Valid @RequestBody SellerProfileRequest request, Principal principal) {
+        SellerProfileResponse sellerProfileResponse = sellerProfileService.updateOwnProfile(request, principal.getName());
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, "You have updated your profile successfully", sellerProfileResponse, Instant.now())
         );
     }
 
