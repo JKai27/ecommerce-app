@@ -13,13 +13,12 @@ public interface SellerProfileService {
 
     SellerProfileResponse applyForSeller(User user, SellerProfileRequest request);
 
-    void approveSeller(SellerApprovalRequest request);
+    SellerProfileResponse approveSeller(SellerApprovalRequest request);
 
     void rejectSeller(String sellerId, String reason);
-
     /*
-        Change seller's status from pending to
-     */
+            Change seller's status from pending to
+         */
     SellerProfileResponse updateStatus(String sellerId, String status);
 
     List<SellerProfileResponse> bulkUpdateStatus(List<String> ids, String status);
@@ -28,4 +27,7 @@ public interface SellerProfileService {
 
     void deleteAllSellers();
     void deleteSeller(String sellerId);
+
+    SellerProfileResponse getByUserId(String id);
+    SellerProfileResponse updateOwnProfile(SellerProfileRequest request, String userId);
 }

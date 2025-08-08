@@ -7,6 +7,9 @@ import java.util.List;
 
 public interface RoleAssignmentService {
     Role assignRoleToUser(User user, String roleName);
+
+    void removeRoleFromUser(User user, String roleName);
+
     Role createRoleWithPermissions(String roleName, List<Permission> permissionNames);
     Role getOrCreateDefaultRole();
 }

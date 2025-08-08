@@ -4,13 +4,14 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import shopeazy.com.ecommerce_app.common.enums.Status;
+import shopeazy.com.ecommerce_app.common.exception.ResourceNotFoundException;
 import shopeazy.com.ecommerce_app.security.exception.InvalidEmailException;
 import shopeazy.com.ecommerce_app.product.exception.InvalidStatusException;
+import shopeazy.com.ecommerce_app.user.dto.UpdateUserProfileRequest;
 import shopeazy.com.ecommerce_app.user.exception.UserNotFoundException;
 import shopeazy.com.ecommerce_app.user.mapper.UserMapper;
 import shopeazy.com.ecommerce_app.security.model.Role;
@@ -21,13 +22,11 @@ import shopeazy.com.ecommerce_app.user.dto.UserDTO;
 import shopeazy.com.ecommerce_app.security.repository.RoleRepository;
 import shopeazy.com.ecommerce_app.user.repository.UserRepository;
 import shopeazy.com.ecommerce_app.database.service.SequenceGeneratorService;
-import shopeazy.com.ecommerce_app.user.service.UserService;
 
 import javax.management.relation.RoleNotFoundException;
 import java.security.Principal;
 import java.time.Instant;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -36,7 +35,6 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final BCryptPasswordEncoder passwordEncoder;
-    private final RedisTemplate<String, String> redisTemplate;
     private final HttpServletResponse httpServletResponse;
     private final SequenceGeneratorService sequenceGenerator;
 
@@ -86,9 +84,9 @@ public class UserServiceImpl implements UserService {
 
             return usersExceptAdmins.stream()
                     .map(user -> UserMapper.mapToDTO(user, roleRepository))
-                    .collect(Collectors.toList());
+                    .toList();
         } catch (Exception e) {
-            throw new RuntimeException("There are no users in the system. Database is empty" + e);
+            throw new ResourceNotFoundException("There are no users in the system. Database is empty" + e);
         }
     }
 
@@ -119,7 +117,28 @@ public class UserServiceImpl implements UserService {
         sequenceGenerator.resetSequence("userNumber");
         return "All users successfully deleted except admin(s)";
     }
+    @Override
+    public UserDTO updateOwnProfile(UpdateUserProfileRequest request, String userId) {
+        log.info("Update own profile request for user ID: {}", userId);
 
+        User user = userRepository.getUserById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User with ID " + userId + " doesn't exist"));
+
+
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setUsername(request.getUsername());
+        user.setGender(request.getGender());
+        user.setAddress(request.getAddress());
+        user.setImageUrl(request.getImageUrl());
+
+        // Hashing password if provided
+        if (request.getPassword() != null && !request.getPassword().isEmpty()) {
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+
+        return UserMapper.mapToDTO(userRepository.save(user), roleRepository);
+    }
 
     @Override
     public void deleteById(String userId) {
