@@ -3,7 +3,8 @@
     "allow": [
       "Bash(mv:*)",
       "Bash(find:*)",
-      "Bash(./gradlew compileJava:*)"
+      "Bash(./gradlew compileJava:*)",
+      "Bash(chmod:*)"
     ],
     "deny": []
   }

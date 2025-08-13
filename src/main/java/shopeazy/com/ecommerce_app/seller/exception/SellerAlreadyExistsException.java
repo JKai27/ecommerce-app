@@ -1,7 +1,10 @@
 package shopeazy.com.ecommerce_app.seller.exception;
 
-public class SellerAlreadyExistsException extends RuntimeException {
+import org.springframework.http.HttpStatus;
+import shopeazy.com.ecommerce_app.common.exception.BusinessException;
+
+public class SellerAlreadyExistsException extends BusinessException {
     public SellerAlreadyExistsException(String message) {
-        super(message);
+        super(HttpStatus.CONFLICT,"Seller Already Exists", message);
     }
 }

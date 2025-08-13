@@ -4,13 +4,12 @@ import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 @Getter
-public class AppException extends RuntimeException{
+@Deprecated // Use BusinessException directly instead
+public class AppException extends BusinessException {
     private final HttpStatus status;
-    private final String message;
 
     public AppException(HttpStatus status, String message) {
-        super(message);
+        super(status, ProblemTypes.BAD_REQUEST, message);
         this.status = status;
-        this.message = message;
     }
 }

@@ -1,0 +1,141 @@
+// sample-problem-details.json - Example RFC 7807 Problem Detail responses
+
+// 1. Validation Error (400) - Multiple field validation failures
+{
+  "type": "https://api.shopeazy.com/problems/validation-error",
+  "title": "Validation Failed",
+  "status": 400,
+  "detail": "Request validation failed on 3 field(s)",
+  "instance": "/api/users",
+  "timestamp": "2024-01-15T10:30:45.123Z",
+  "correlationId": "abc-123-def-456",
+  "errors": {
+    "email": ["Please enter a valid email address"],
+    "password": ["Password must be at least 8 characters", "Password must contain uppercase letters"],
+    "firstName": ["First name is required"]
+  }
+}
+
+// 2. Resource Not Found (404) - Simple not found error
+{
+  "type": "https://api.shopeazy.com/problems/not-found",
+  "title": "Resource Not Found", 
+  "status": 404,
+  "detail": "User not found with ID: 12345",
+  "instance": "/api/users/12345",
+  "timestamp": "2024-01-15T10:31:22.456Z",
+  "correlationId": "def-456-ghi-789"
+}
+
+// 3. Business Logic Error (409) - Seller already exists
+{
+  "type": "https://api.shopeazy.com/problems/seller-already-exists",
+  "title": "Seller Already Exists",
+  "status": 409, 
+  "detail": "Seller already exists under this email: john@company.com",
+  "instance": "/api/sellers/apply",
+  "timestamp": "2024-01-15T10:32:10.789Z",
+  "correlationId": "ghi-789-jkl-012",
+  "email": "john@company.com",
+  "companyName": "John's Tech Solutions"
+}
+
+// 4. Forbidden Operation (403) - Authorization failure
+{
+  "type": "https://api.shopeazy.com/problems/forbidden-operation",
+  "title": "Forbidden Operation",
+  "status": 403,
+  "detail": "You don't have permission to delete this product",
+  "instance": "/api/products/prod-123/delete", 
+  "timestamp": "2024-01-15T10:33:05.012Z",
+  "correlationId": "jkl-012-mno-345",
+  "productId": "prod-123",
+  "requiredRole": "ROLE_ADMIN"
+}
+
+// 5. Invalid Email (400) - Domain-specific error with context
+{
+  "type": "https://api.shopeazy.com/problems/invalid-email",
+  "title": "Invalid Email",
+  "status": 400,
+  "detail": "The email format is invalid",
+  "instance": "/api/sellers/apply",
+  "timestamp": "2024-01-15T10:34:30.345Z", 
+  "correlationId": "mno-345-pqr-678",
+  "email": "invalid-email-format",
+  "field": "contactEmail"
+}
+
+// 6. Product Out of Stock (404) - Inventory-related error
+{
+  "type": "https://api.shopeazy.com/problems/product-out-of-stock",
+  "title": "Product Out of Stock",
+  "status": 404,
+  "detail": "Product 'iPhone 15 Pro' is currently out of stock",
+  "instance": "/api/cart/add",
+  "timestamp": "2024-01-15T10:35:15.678Z",
+  "correlationId": "pqr-678-stu-901", 
+  "productId": "iphone-15-pro-128gb",
+  "productName": "iPhone 15 Pro", 
+  "requestedQuantity": 2,
+  "availableQuantity": 0
+}
+
+// 7. Constraint Violation (400) - Method parameter validation
+{
+  "type": "https://api.shopeazy.com/problems/constraint-violation", 
+  "title": "Constraint Violation",
+  "status": 400,
+  "detail": "Parameter validation failed",
+  "instance": "/api/products",
+  "timestamp": "2024-01-15T10:36:45.901Z",
+  "correlationId": "stu-901-vwx-234",
+  "violations": {
+    "getProductsByCategory.categoryId": "Category ID must not be blank",
+    "getProductsByCategory.limit": "Limit must be between 1 and 100"
+  }
+}
+
+// 8. Internal Server Error (500) - Safe error without internal details
+{
+  "type": "https://api.shopeazy.com/problems/internal-server-error",
+  "title": "Internal Server Error",
+  "status": 500,
+  "detail": "An unexpected error occurred. Please try again later.",
+  "instance": "/api/orders/process",
+  "timestamp": "2024-01-15T10:37:20.234Z",
+  "correlationId": "vwx-234-yz1-567"
+  // Note: No stack traces, database errors, or sensitive information exposed
+  // Full details are logged server-side with the correlation ID
+}
+
+// 9. Company Name Taken (400) - Specific business rule violation
+{
+  "type": "https://api.shopeazy.com/problems/company-name-taken",
+  "title": "Company Name Taken", 
+  "status": 400,
+  "detail": "A seller account under the company name 'Tech Innovations Ltd' already exists",
+  "instance": "/api/sellers/apply",
+  "timestamp": "2024-01-15T10:38:10.567Z",
+  "correlationId": "yz1-567-ab2-890",
+  "companyName": "Tech Innovations Ltd",
+  "suggestedAlternatives": [
+    "Tech Innovations LLC",
+    "Tech Innovations Inc", 
+    "Tech Innovations Co"
+  ]
+}
+
+// 10. Duplicate Product (400) - Product already exists
+{
+  "type": "https://api.shopeazy.com/problems/duplicate-product",
+  "title": "Duplicate Product", 
+  "status": 400,
+  "detail": "A product with SKU 'LAPTOP-DELL-123' already exists",
+  "instance": "/api/products",
+  "timestamp": "2024-01-15T10:39:33.890Z",
+  "correlationId": "ab2-890-cd3-123",
+  "sku": "LAPTOP-DELL-123",
+  "existingProductId": "prod-456",
+  "existingProductName": "Dell Laptop XPS 13"
+}

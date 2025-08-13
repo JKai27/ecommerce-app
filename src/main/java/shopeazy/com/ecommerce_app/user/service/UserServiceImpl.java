@@ -4,12 +4,15 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import shopeazy.com.ecommerce_app.common.enums.Status;
 import shopeazy.com.ecommerce_app.common.exception.ResourceNotFoundException;
-import shopeazy.com.ecommerce_app.security.exception.InvalidEmailException;
+import shopeazy.com.ecommerce_app.common.exception.BusinessException;
+import shopeazy.com.ecommerce_app.common.exception.ProblemTypes;
+import shopeazy.com.ecommerce_app.user.exception.UserAlreadyExistsException;
 import shopeazy.com.ecommerce_app.product.exception.InvalidStatusException;
 import shopeazy.com.ecommerce_app.user.dto.UpdateUserProfileRequest;
 import shopeazy.com.ecommerce_app.user.exception.UserNotFoundException;
@@ -44,7 +47,7 @@ public class UserServiceImpl implements UserService {
         long sequence = sequenceGenerator.generateSequence("userNumber");
         String userNumber = String.format("%06d", sequence);
         if (userRepository.existsByEmail(createUserRequest.getEmail())) {
-            throw new InvalidEmailException("Email already exists. Try another email.");
+            throw new UserAlreadyExistsException("Email already exists. Try another email.");
         }
         Role userRole = getRoleByName();
         List<String> roles = List.of(userRole.getName());
@@ -93,7 +96,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User getUserByPrincipal(Principal principal) {
         if (principal == null || principal.getName() == null) {
-            throw new IllegalArgumentException("Unauthenticated access- Principal is null");
+            throw new BusinessException(HttpStatus.UNAUTHORIZED, ProblemTypes.UNAUTHENTICATED_ACCESS, "Unauthenticated access- Principal is null");
         }
 
         return userRepository.findByEmail(principal.getName())
@@ -154,7 +157,7 @@ public class UserServiceImpl implements UserService {
         Assert.notNull(userIds, "User ID list must not be null");
 
         if (userIds.contains(null)) {
-            throw new IllegalArgumentException("User ID list must not contain null values");
+            throw new BusinessException(HttpStatus.BAD_REQUEST, ProblemTypes.INVALID_REQUEST_DATA, "User ID list must not contain null values");
         }
 
         List<User> users = userRepository.findAllById(userIds);
