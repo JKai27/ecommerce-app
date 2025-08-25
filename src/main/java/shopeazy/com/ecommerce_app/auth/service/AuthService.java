@@ -17,11 +17,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import shopeazy.com.ecommerce_app.common.exception.AppException;
 import shopeazy.com.ecommerce_app.security.repository.RoleRepository;
+import shopeazy.com.ecommerce_app.user.exception.PasswordDoesNotMatchException;
+import shopeazy.com.ecommerce_app.user.exception.UserNotFoundException;
 import shopeazy.com.ecommerce_app.user.dto.UserDTO;
 import shopeazy.com.ecommerce_app.user.mapper.UserMapper;
 import shopeazy.com.ecommerce_app.user.model.User;
 import shopeazy.com.ecommerce_app.auth.dto.LoginRequest;
-import shopeazy.com.ecommerce_app.auth.dto.LoginResponse;
 import shopeazy.com.ecommerce_app.user.repository.UserRepository;
 import shopeazy.com.ecommerce_app.security.jwt.JwtService;
 import org.slf4j.Logger;
@@ -49,11 +50,11 @@ public class AuthService {
     public UserDTO login(LoginRequest loginRequest, HttpServletResponse response) {
         // Step 1: Validate User Credentials
         User user = userRepository.findByEmail(loginRequest.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("User with email " + loginRequest.getEmail() + " not found"));
+                .orElseThrow(() -> new UserNotFoundException("User with email " + loginRequest.getEmail() + " not found"));
 
         // Step 2: Check if the password matches
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("Invalid credentials");
+            throw new PasswordDoesNotMatchException(user.getId());
         }
 
         // Step 3: Create an Authentication object using roles as GrantedAuthority
@@ -71,7 +72,7 @@ public class AuthService {
         // Step 5: Set JWT tokens in cookies
         setJwtCookie(response, accessToken, refreshToken);
 
-        // Step 6: Return LoginResponse
+        // Step 6: Response - UserDTO
         return UserMapper.mapToDTO(user, roleRepository);
     }
 

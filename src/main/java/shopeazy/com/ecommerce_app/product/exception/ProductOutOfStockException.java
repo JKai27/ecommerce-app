@@ -1,11 +1,11 @@
 package shopeazy.com.ecommerce_app.product.exception;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import shopeazy.com.ecommerce_app.common.exception.BusinessException;
+import shopeazy.com.ecommerce_app.common.exception.ProblemTypes;
 
-@ResponseStatus(HttpStatus.NOT_FOUND)
-public class ProductOutOfStockException extends RuntimeException {
+public class ProductOutOfStockException extends BusinessException {
     public ProductOutOfStockException(String message) {
-        super(message);
+        super(HttpStatus.BAD_REQUEST, ProblemTypes.PRODUCT_OUT_OF_STOCK, message);
     }
 }

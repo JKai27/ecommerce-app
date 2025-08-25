@@ -13,7 +13,6 @@ import shopeazy.com.ecommerce_app.common.dto.ApiResponse;
 
 import java.security.Principal;
 import java.time.Instant;
-import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -30,7 +29,7 @@ public class CartController {
         );
     }
 
-    @PutMapping("/update")
+    @PatchMapping("/update")
     public ResponseEntity<ApiResponse<UpdatedCartInfoResponse>> updateCartItem(
             @RequestBody @Valid UpdateCartRequest request,
             Principal principal) {

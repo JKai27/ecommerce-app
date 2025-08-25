@@ -16,6 +16,9 @@ import shopeazy.com.ecommerce_app.shopping_cart.model.pojo.CartItem;
 import shopeazy.com.ecommerce_app.shopping_cart.model.pojo.RemovedProductItem;
 import shopeazy.com.ecommerce_app.shopping_cart.repository.CartRepository;
 import shopeazy.com.ecommerce_app.common.exception.ResourceNotFoundException;
+import shopeazy.com.ecommerce_app.common.exception.BusinessException;
+import shopeazy.com.ecommerce_app.common.exception.ProblemTypes;
+import org.springframework.http.HttpStatus;
 import shopeazy.com.ecommerce_app.product.dto.ProductAvailabilityResponse;
 import shopeazy.com.ecommerce_app.product.model.Product;
 import shopeazy.com.ecommerce_app.product.repository.ProductRepository;
@@ -107,7 +110,7 @@ public class CartServiceImpl implements CartService {
         log.info("Updating cart for userEmail={}, request={}", userEmail, request);
 
         if (request.getQuantity() <= 0) {
-            throw new IllegalArgumentException("Quantity must be greater than zero");
+            throw new BusinessException(HttpStatus.BAD_REQUEST, ProblemTypes.INVALID_QUANTITY, "Quantity must be greater than zero");
         }
 
         Product product = productRepository.findById(request.getProductId())

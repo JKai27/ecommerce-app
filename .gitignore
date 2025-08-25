@@ -16,3 +16,15 @@ target/
 # OS
 .DS_Store
 Thumbs.db
+
+# Claude Code files
+.claude/
+
+# Temporary files
+commit-msg.txt
+cookies.txt
+seller_cookies.txt
+admin_cookies.txt
+headers.txt
+seller_headers.txt
+admin_headers.txt

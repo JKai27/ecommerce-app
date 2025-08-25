@@ -23,22 +23,10 @@ public class AuthController {
     private final AuthService authService;
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<UserDTO>> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
-        try {
-            UserDTO userDTO = authService.login(loginRequest, response);
-            return ResponseEntity.ok(
-                    new ApiResponse<>(true, "Login successful", userDTO, Instant.now())
-            );
-        } catch (IllegalArgumentException e) {
-            log.error("Login failed: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-                    new ApiResponse<>(false, e.getMessage(), null, Instant.now())
-            );
-        } catch (Exception e) {
-            log.error("Unexpected error during login", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    new ApiResponse<>(false, "Internal server error during login", null, Instant.now())
-            );
-        }
+        UserDTO userDTO = authService.login(loginRequest, response);
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, "Login successful", userDTO, Instant.now())
+        );
     }
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<UserDTO>> refreshToken(
