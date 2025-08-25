@@ -10,10 +10,13 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import shopeazy.com.ecommerce_app.common.exception.ResourceNotFoundException;
 import shopeazy.com.ecommerce_app.product.dto.*;
+import shopeazy.com.ecommerce_app.product.repository.ProductRepository;
 import shopeazy.com.ecommerce_app.user.model.User;
 import shopeazy.com.ecommerce_app.user.repository.UserRepository;
 import shopeazy.com.ecommerce_app.product.service.ProductService;
 import shopeazy.com.ecommerce_app.common.dto.ApiResponse;
+import shopeazy.com.ecommerce_app.seller.model.Seller;
+import shopeazy.com.ecommerce_app.seller.repository.SellerProfileRepository;
 
 import java.security.Principal;
 import java.time.Instant;
@@ -27,6 +30,8 @@ import java.util.List;
 public class ProductController {
     private final ProductService productService;
     private final UserRepository userRepository;
+    private final SellerProfileRepository sellerProfileRepository;
+    private final ProductRepository productRepository;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<ProductResponseDto>>> getAllProducts() {
@@ -54,8 +59,15 @@ public class ProductController {
 
     @PostMapping
     @PreAuthorize("hasAuthority('ROLE_SELLER')")
-    public ResponseEntity<ApiResponse<ProductResponseDto>> registerProduct(@Valid @RequestBody CreateProductRequest request) {
-        ProductResponseDto productResponseDto = productService.registerProduct(request);
+    public ResponseEntity<ApiResponse<ProductResponseDto>> registerProduct(@Valid @RequestBody CreateProductRequest request, Principal principal) {
+        String sellerEmail = principal.getName();
+        User user = userRepository.findByEmail(sellerEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found."));
+        
+        Seller seller = sellerProfileRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Seller profile not found."));
+        
+        ProductResponseDto productResponseDto = productService.registerProduct(request, seller.getSellerId());
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 new ApiResponse<>(true, "Product registered successfully", productResponseDto, Instant.now())
         );
@@ -135,6 +147,12 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @DeleteMapping
+    public ResponseEntity<String> clearAllExistingProducts() {
+        productRepository.deleteAll();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
 }
 
 

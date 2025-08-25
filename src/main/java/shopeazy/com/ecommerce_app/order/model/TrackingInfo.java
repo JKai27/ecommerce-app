@@ -1,4 +1,4 @@
-package shopeazy.com.ecommerce_app.orders.model;
+package shopeazy.com.ecommerce_app.order.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

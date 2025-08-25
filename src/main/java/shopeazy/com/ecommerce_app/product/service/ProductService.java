@@ -13,7 +13,7 @@ public interface ProductService {
 
     ProductResponseDto getProductById(String id);
 
-    ProductResponseDto registerProduct(CreateProductRequest request);
+    ProductResponseDto registerProduct(CreateProductRequest request, String sellerId);
 
     ProductResponseDto updateOwnProduct(String sellerId, UpdateProductRequestDto request);
 

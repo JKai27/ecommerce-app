@@ -1,8 +1,8 @@
 package shopeazy.com.ecommerce_app.notification.template;
 
 import org.springframework.stereotype.Component;
-import shopeazy.com.ecommerce_app.orders.enums.OrderStatus;
-import shopeazy.com.ecommerce_app.orders.model.Order;
+import shopeazy.com.ecommerce_app.order.enums.OrderStatus;
+import shopeazy.com.ecommerce_app.order.model.Order;
 
 import static shopeazy.com.ecommerce_app.notification.constant.EmailTemplateConstants.*;
 import static shopeazy.com.ecommerce_app.notification.constant.EmailTemplateConstants.DIV_CONTENT_CLOSE;
@@ -15,10 +15,7 @@ import static shopeazy.com.ecommerce_app.notification.constant.EmailTemplateCons
 import static shopeazy.com.ecommerce_app.notification.constant.EmailTemplateConstants.FOOTER_STYLE;
 import static shopeazy.com.ecommerce_app.notification.constant.EmailTemplateConstants.GREETING;
 import static shopeazy.com.ecommerce_app.notification.constant.EmailTemplateConstants.HTML_END;
-import static shopeazy.com.ecommerce_app.notification.constant.EmailTemplateConstants.SHIPPED_MESSAGE;
 import static shopeazy.com.ecommerce_app.notification.constant.EmailTemplateConstants.STRONG_ORDER_NUMBER;
-import static shopeazy.com.ecommerce_app.notification.constant.EmailTemplateConstants.TRACKING_INFO_SECTION;
-import static shopeazy.com.ecommerce_app.notification.constant.EmailTemplateConstants.TRACKING_INFO_STYLE;
 
 @Component
 public class OrderConfirmationTemplateBuilder implements EmailTemplateBuilder {

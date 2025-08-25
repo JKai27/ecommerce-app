@@ -59,8 +59,8 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductResponseDto registerProduct(CreateProductRequest request) {
-        if (productRepository.existsByNameAndSellerId(request.getName(), request.getSellerId())) {
+    public ProductResponseDto registerProduct(CreateProductRequest request, String sellerId) {
+        if (productRepository.existsByNameAndSellerId(request.getName(), sellerId)) {
             throw new DuplicateProductException("Product with name '" + request.getName() + "' already exists for this seller.");
         }
         Product productToRegister = new Product();
@@ -75,10 +75,10 @@ public class ProductServiceImpl implements ProductService {
         productToRegister.setStockCount(request.getStockCount());
         productToRegister.setCategory(request.getCategory());
         productToRegister.setStatus(request.getStatus());
-        productToRegister.setSellerId(request.getSellerId());
+        productToRegister.setSellerId(sellerId);
         productRepository.save(productToRegister);
 
-        Seller seller = sellerProfileRepository.findById(request.getSellerId())
+        Seller seller = sellerProfileRepository.findById(sellerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
 
         return ProductMapper.mapToDto(productToRegister, seller);

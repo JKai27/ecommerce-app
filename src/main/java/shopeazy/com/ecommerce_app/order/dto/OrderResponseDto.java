@@ -1,12 +1,12 @@
-package shopeazy.com.ecommerce_app.orders.dto;
+package shopeazy.com.ecommerce_app.order.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import shopeazy.com.ecommerce_app.common.model.Address;
-import shopeazy.com.ecommerce_app.orders.enums.OrderStatus;
-import shopeazy.com.ecommerce_app.orders.enums.PaymentStatus;
-import shopeazy.com.ecommerce_app.orders.model.*;
+import shopeazy.com.ecommerce_app.order.enums.OrderStatus;
+import shopeazy.com.ecommerce_app.order.enums.PaymentStatus;
+import shopeazy.com.ecommerce_app.order.model.*;
 
 import java.time.Instant;
 import java.util.List;

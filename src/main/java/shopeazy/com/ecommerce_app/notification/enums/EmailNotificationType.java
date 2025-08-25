@@ -2,8 +2,7 @@ package shopeazy.com.ecommerce_app.notification.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import shopeazy.com.ecommerce_app.orders.enums.OrderStatus;
+import shopeazy.com.ecommerce_app.order.enums.OrderStatus;
 
 @Getter
 @AllArgsConstructor

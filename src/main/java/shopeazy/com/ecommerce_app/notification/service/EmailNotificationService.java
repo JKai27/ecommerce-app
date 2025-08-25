@@ -11,11 +11,11 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import shopeazy.com.ecommerce_app.notification.enums.EmailNotificationType;
 import shopeazy.com.ecommerce_app.notification.template.EmailTemplateFactory;
-import shopeazy.com.ecommerce_app.orders.model.Order;
+import shopeazy.com.ecommerce_app.order.model.Order;
 
 
 /**
- * Service for sending email notifications related to orders.
+ * Service for sending email notifications related to order.
  * Supports both simple text and HTML email templates.
  */
 

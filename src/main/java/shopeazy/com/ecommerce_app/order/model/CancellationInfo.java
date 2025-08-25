@@ -1,9 +1,9 @@
-package shopeazy.com.ecommerce_app.orders.model;
+package shopeazy.com.ecommerce_app.order.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import shopeazy.com.ecommerce_app.orders.enums.CancellationReason;
+import shopeazy.com.ecommerce_app.order.enums.CancellationReason;
 
 import java.math.BigDecimal;
 import java.time.Instant;

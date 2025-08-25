@@ -36,7 +36,4 @@ public class CreateProductRequest {
 
     @NotNull(message = "Status is required")
     private ProductStatus status;
-
-    @NotBlank(message = "Seller ID is required")
-    private String sellerId;
 }

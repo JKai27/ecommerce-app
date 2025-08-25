@@ -1,4 +1,4 @@
-package shopeazy.com.ecommerce_app.orders.dto;
+package shopeazy.com.ecommerce_app.order.dto;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
