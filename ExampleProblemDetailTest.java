@@ -1,5 +1,5 @@
 // ExampleProblemDetailTest.java - Example test showing RFC 7807 testing approach
-// Place this in: src/test/java/shopeazy/com/ecommerce_app/common/exception/
+// Just for learning Purpose (Not a part of code)
 
 package shopeazy.com.ecommerce_app.common.exception;
 

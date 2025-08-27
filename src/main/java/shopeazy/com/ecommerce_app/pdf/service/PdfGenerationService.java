@@ -41,7 +41,7 @@ public class PdfGenerationService {
             // Add customer information
             addCustomerInformation(document, order);
             
-            // Add order items table
+            // Add order item table
             addOrderItemsTable(document, order);
             
             // Add pricing summary
