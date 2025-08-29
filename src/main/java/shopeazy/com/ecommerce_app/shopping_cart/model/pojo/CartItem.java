@@ -21,6 +21,25 @@ public class CartItem {
 
     private String productDescription;
 
-    @NotNull(message = "Product price is required")
-    private BigDecimal productPrice;
+    // New pricing fields
+    @NotNull(message = "Original price is required")
+    private BigDecimal originalPrice;
+    
+    @NotNull(message = "Discounted price is required")
+    private BigDecimal discountedPrice;
+    
+    @NotNull(message = "Discount percentage is required")
+    private BigDecimal discount;         // Percentage
+
+    // Computed field for backward compatibility
+    public BigDecimal getProductPrice() {
+        return discountedPrice != null ? discountedPrice : BigDecimal.ZERO;
+    }
+
+    // Constructor for backward compatibility and default values
+    public CartItem() {
+        this.originalPrice = BigDecimal.ZERO;
+        this.discountedPrice = BigDecimal.ZERO;
+        this.discount = BigDecimal.ZERO;
+    }
 }

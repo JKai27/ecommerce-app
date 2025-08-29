@@ -27,6 +27,7 @@ import shopeazy.com.ecommerce_app.user.model.User;
 import shopeazy.com.ecommerce_app.user.repository.UserRepository;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -85,13 +86,7 @@ public class CartServiceImpl implements CartService {
             CartItem existingItem = existingItemOption.get();
             existingItem.setProductQuantity(existingItem.getProductQuantity() + request.getQuantity());
         } else {
-            CartItem newItem = new CartItem();
-            newItem.setProductId(product.getId());
-            newItem.setProductName(product.getName());
-            newItem.setProductDescription(product.getDescription());
-            newItem.setProductPrice(BigDecimal.valueOf(product.getPrice()));
-            newItem.setProductQuantity(request.getQuantity());
-
+            CartItem newItem = createCartItem(product, request.getQuantity());
             cart.getItems().add(newItem);
         }
 
@@ -139,12 +134,7 @@ public class CartServiceImpl implements CartService {
                     item.setProductQuantity(item.getProductQuantity() + request.getQuantity());
                     log.info("Increased quantity of product {} in cart", product.getId());
                 } else {
-                    CartItem newItem = new CartItem();
-                    newItem.setProductId(product.getId());
-                    newItem.setProductName(product.getName());
-                    newItem.setProductDescription(product.getDescription());
-                    newItem.setProductPrice(BigDecimal.valueOf(product.getPrice()));
-                    newItem.setProductQuantity(request.getQuantity());
+                    CartItem newItem = createCartItem(product, request.getQuantity());
                     cart.getItems().add(newItem);
                     log.info("Added new product {} to cart", product.getId());
                 }
@@ -234,6 +224,30 @@ public class CartServiceImpl implements CartService {
     private Cart getCartOwnedBy(User user) {
         return cartRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("No cart found for the authenticated user"));
+    }
+
+    /**
+     * Helper method to create CartItem with proper pricing calculations
+     */
+    private CartItem createCartItem(Product product, int quantity) {
+        CartItem newItem = new CartItem();
+        newItem.setProductId(product.getId());
+        newItem.setProductName(product.getName());
+        newItem.setProductDescription(product.getDescription());
+        newItem.setProductQuantity(quantity);
+        
+        // Calculate pricing
+        BigDecimal originalPrice = BigDecimal.valueOf(product.getPrice());
+        BigDecimal discountPercentage = BigDecimal.valueOf(product.getDiscount());
+        BigDecimal discountAmount = originalPrice.multiply(discountPercentage)
+                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+        BigDecimal discountedPrice = originalPrice.subtract(discountAmount);
+        
+        newItem.setOriginalPrice(originalPrice);
+        newItem.setDiscount(discountPercentage);
+        newItem.setDiscountedPrice(discountedPrice);
+        
+        return newItem;
     }
 
 }

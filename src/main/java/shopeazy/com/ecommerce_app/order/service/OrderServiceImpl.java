@@ -531,8 +531,8 @@ public class OrderServiceImpl implements OrderService {
             orderItem.setProductName(cartItem.getProductName());
             orderItem.setProductDescription(cartItem.getProductDescription());
             orderItem.setQuantity(cartItem.getProductQuantity());
-            orderItem.setPriceAtTime(cartItem.getProductPrice());
-            orderItem.setTotalPrice(cartItem.getProductPrice().multiply(BigDecimal.valueOf(cartItem.getProductQuantity())));
+            orderItem.setPriceAtTime(cartItem.getDiscountedPrice()); // Use discounted price for orders
+            orderItem.setTotalPrice(cartItem.getDiscountedPrice().multiply(BigDecimal.valueOf(cartItem.getProductQuantity())));
             orderItem.setSellerId(product.getSellerId());
             orderItem.setSellerName(seller != null ? seller.getCompanyName() : "Unknown Seller");
 
